@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
+//
 @Composable
 fun mainScreen() {
     Column(
