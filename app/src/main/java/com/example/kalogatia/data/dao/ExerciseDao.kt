@@ -1,0 +1,33 @@
+package com.example.kalogatia.data.dao
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Upsert
+import com.example.kalogatia.data.entities.Exercise
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface ExerciseDao {
+    @Upsert
+    suspend fun upsertExercise(exercise: Exercise)
+
+    @Delete
+    suspend fun deleteExercise(exercise: Exercise)
+
+    @Query("SELECT * FROM exercise")
+    fun selectAllExercises(): Flow<List<Exercise>>
+
+    @Query("SELECT exerciseTypeId FROM exerciseType WHERE name = :exerciseName LIMIT 1")
+    suspend fun getExerciseTypeIdByName(exerciseName: String): Int?
+
+    @Query("SELECT exerciseId FROM exercise WHERE exerciseTypeId = :exerciseTypeId LIMIT 1")
+    suspend fun getExerciseIdByTypeId(exerciseTypeId: Int): Int?
+
+    @Transaction
+    suspend fun getExerciseIdByName(exerciseName: String): Int? {
+        val exerciseTypeId = getExerciseTypeIdByName(exerciseName)
+        return exerciseTypeId?.let { getExerciseIdByTypeId(it) }
+    }
+}
