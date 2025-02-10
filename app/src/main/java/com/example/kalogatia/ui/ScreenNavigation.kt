@@ -44,7 +44,7 @@ fun Navigation(navController: NavController, onNavigate: (String) -> Unit) {
     ) {
         NavItem(item = ScreenNavigation.Home, isSelected = (currentRoute == ScreenNavigation.Home.route), onNavigate)
         NavItem(item = ScreenNavigation.Graph, isSelected = (currentRoute == ScreenNavigation.Graph.route), onNavigate)
-        NavItem(item = ScreenNavigation.Add, isSelected = (currentRoute == ScreenNavigation.Add.route), onNavigate)
+        NavItem(item = ScreenNavigation.Add, isSelected = (currentRoute == ScreenNavigation.Add.route || currentRoute == "addExerciseScreen"), onNavigate)
         NavItem(item = ScreenNavigation.Calendar, isSelected = (currentRoute == ScreenNavigation.Calendar.route), onNavigate)
         NavItem(item = ScreenNavigation.Settings, isSelected = (currentRoute == ScreenNavigation.Settings.route), onNavigate)
     }

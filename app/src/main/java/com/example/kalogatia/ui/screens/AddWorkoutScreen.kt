@@ -1,5 +1,7 @@
-package com.example.kalogatia.ui
+package com.example.kalogatia.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -11,13 +13,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,12 +30,12 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -41,71 +44,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import com.example.kalogatia.data.entities.Exercise
 import com.example.kalogatia.ui.Buttons.PlayButton
+import com.example.kalogatia.ui.ContentLayout
+import com.example.kalogatia.ui.Divider
+import com.example.kalogatia.ui.NavigationLayout
+import com.example.kalogatia.ui.NotFound
+import com.example.kalogatia.ui.TopBarAddWorkoutScreen
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddWorkoutScreen(navController: NavController, onNavigate: (String) -> Unit) {
-    var showDialog by remember { mutableStateOf(false) }
-    var workoutName by remember { mutableStateOf("Type workout name") }
-
-
+    val exercises = remember { mutableStateListOf<Exercise>() }
+    val currentScreen = navController.currentBackStackEntry?.destination?.route ?: "Unknown"
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0E0E0E)),
+            .background(Color(0xFF0E0E0E)).windowInsetsPadding(WindowInsets.systemBars),
     ) {
-        // Top Bar - Text, PLayButton
-        Box(
-            modifier = Modifier
-                .weight(0.18f)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.TopStart
-        ) {
-            TopBarAddWorkout(
-                workoutName = workoutName,
-                onTextClick = { showDialog = true }
-            )
-        }
-
-        // Content - Workouts
-        Box(
-            modifier = Modifier
-                .weight(0.72f)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.TopCenter
-        ) {
-            Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Content()
-            }
-        }
-
-        // Bottom Bar - Navigation
-        Box(
-            modifier = Modifier
-                .weight(0.10f)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                .background(Color(0xFF25283C)),
-            contentAlignment = Alignment.Center
-        ) {
-            Navigation(navController, onNavigate)
-        }
-
-    }
-
-    if (showDialog) {
-        ChangeName(
-            onDismiss = { showDialog = false },
-            onEnter = { newName ->
-                workoutName = newName
-                showDialog = false
-            }
-        )
+        TopBarAddWorkoutScreen(modifier = Modifier.weight(0.15f))
+        Divider()
+        ContentLayout(modifier = Modifier.weight(0.75f), exercises, currentScreen)
+        NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate)
     }
 }
 
@@ -155,7 +116,7 @@ fun TopBarAddWorkout(workoutName: String, onTextClick: () -> Unit) {
 
 @Composable
 fun Content() {
-    Exercise()
+    NotFound("You have no exercises in this wokrout")
 }
 
 @Composable

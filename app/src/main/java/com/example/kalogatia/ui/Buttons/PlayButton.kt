@@ -11,14 +11,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-
+/* possible colour 7CFC00 */
+/* old 4CAF50 */
 @Composable
 fun PlayButton() {
     Box(
         modifier = Modifier
             .size(55.dp)
             .background(
-                color = Color(0xFF4CAF50),
+                color = Color(0xFF0FFF50),
                 shape = CircleShape
             ),
         contentAlignment = Alignment.Center

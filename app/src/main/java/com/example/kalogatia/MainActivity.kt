@@ -1,10 +1,13 @@
 package com.example.kalogatia
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -13,17 +16,20 @@ import com.example.kalogatia.data.entities.ExerciseType
 import com.example.kalogatia.data.entities.User
 import com.example.kalogatia.data.entities.Workout
 import com.example.kalogatia.data.entities.WorkoutPlanning
-import com.example.kalogatia.ui.AddWorkoutScreen
-import com.example.kalogatia.ui.MainScreen
 import com.example.kalogatia.ui.handleNavigation
-import com.example.kalogatia.ui.theme.AddExerciseScreen
+import com.example.kalogatia.ui.screens.AddExerciseScreen
+import com.example.kalogatia.ui.screens.AddWorkoutScreen
+import com.example.kalogatia.ui.screens.MainScreen
 import com.example.kalogatia.ui.theme.KalogatiaTheme
+import com.example.kalogatia.viewmodels.MainScreenViewModel
 
 // ctrl + shift + r = replace all
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
@@ -198,17 +204,18 @@ class MainActivity : ComponentActivity() {
                 }
 */
 
-
+                val viewModel: MainScreenViewModel = viewModel(factory = MainScreenViewModel.Factory)
                 val navController = rememberNavController()
+
                 NavHost(navController = navController, startDestination = "mainScreen") {
                     composable("mainScreen") {
-                        MainScreen(navController, { route -> handleNavigation(navController, route) }, workoutDao)
+                        MainScreen(navController, { route -> handleNavigation(navController, route) }, viewModel)
                     }
                     composable("addWorkoutScreen") {
                         AddWorkoutScreen(navController) { route -> handleNavigation(navController, route) }
                     }
                     composable("addExerciseScreen") {
-                        AddExerciseScreen { route -> handleNavigation(navController, route) }
+                        AddExerciseScreen(navController) { route -> handleNavigation(navController, route) }
                     }
                 }
 

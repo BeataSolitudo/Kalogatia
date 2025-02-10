@@ -20,4 +20,10 @@ interface WorkoutDao {
 
     @Query("SELECT workoutId FROM workout WHERE name LIKE :workoutName LIMIT 1")
     suspend fun selectWorkoutByName(workoutName: String): Int?
+
+    @Query("SELECT workout.name FROM workout INNER JOIN workoutPlanning ON workout.workoutId = workoutPlanning.workoutId WHERE workoutPlanning.weekDay = :day")
+    suspend fun selectWorkoutByDay(day: Int): String?
+/*
+    @Query("SELECT * FROM workout INNER JOIN workoutPlanning ON workout.workoutId = workoutPlanning.workoutId;")
+    suspend fun getWorkoutWithWorkoutPlanning(): */
 }
