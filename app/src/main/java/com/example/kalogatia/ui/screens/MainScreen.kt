@@ -3,6 +3,8 @@ package com.example.kalogatia.ui.screens
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,7 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,12 +32,15 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.kalogatia.data.entities.Workout
+import com.example.kalogatia.data.relations.WorkoutWithWorkoutPlanning
 import com.example.kalogatia.ui.AutoResizedText
 import com.example.kalogatia.ui.Buttons.PlayButton
-import com.example.kalogatia.ui.ContentLayout
 import com.example.kalogatia.ui.Divider
 import com.example.kalogatia.ui.NavigationLayout
+import com.example.kalogatia.ui.NotFound
 import com.example.kalogatia.viewmodels.MainScreenViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -41,10 +48,11 @@ import com.example.kalogatia.viewmodels.MainScreenViewModel
 fun MainScreen(
     navController: NavController,
     onNavigate: (String) -> Unit,
-    viewModel: MainScreenViewModel
+    viewModel: MainScreenViewModel = viewModel(factory = MainScreenViewModel.Factory)
 ) {
     val workouts by viewModel.workouts.collectAsState()
     val todayWorkout by viewModel.todayWorkout.collectAsState()
+    val workoutsWithPlanning by viewModel.workoutsWithPlanning.collectAsState()
 
     Column(
         modifier = Modifier
@@ -54,7 +62,7 @@ fun MainScreen(
     ) {
         TopBarMainScreen(modifier = Modifier.weight(0.15f), todayWorkout)
         Divider()
-        ContentLayout(modifier = Modifier.weight(0.75f), workouts, navController.currentBackStackEntry?.destination?.route ?: "Unknown")
+        MainScreenContent(modifier = Modifier.weight(0.75f), workoutsWithPlanning, viewModel, navController)
         NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate)
     }
 }
@@ -68,7 +76,11 @@ fun TodayWorkout(workoutName: String) {
 }
 
 @Composable
-fun Workout(workoutName: String = "N/A", workoutDay: String = "N/A") {
+fun Workout(
+    workout: Workout,
+    workoutDay: String,
+    onWorkoutClick: (Int) -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth(0.9f)
@@ -89,6 +101,7 @@ fun Workout(workoutName: String = "N/A", workoutDay: String = "N/A") {
                 shape = RoundedCornerShape(16.dp)
             )
             .padding(16.dp)
+            .clickable { workout.workoutId?.let { onWorkoutClick(it) } },
     ) {
         Row(
             modifier = Modifier.fillMaxWidth()
@@ -98,7 +111,7 @@ fun Workout(workoutName: String = "N/A", workoutDay: String = "N/A") {
                     .weight(0.7f),
                 contentAlignment = Alignment.TopStart
             ) {
-                AutoResizedText(workoutName, style = TextStyle(color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold))
+                AutoResizedText(workout.name, style = TextStyle(color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold))
             }
             Box(
                 modifier = Modifier
@@ -149,6 +162,44 @@ fun TopBarMainScreen(modifier: Modifier, workoutName: String) {
                 contentAlignment = Alignment.Center
             ) {
                 PlayButton()
+            }
+        }
+    }
+}
+
+@Composable
+fun MainScreenContent(
+    modifier: Modifier,
+    workouts: List<WorkoutWithWorkoutPlanning>,
+    viewModel: MainScreenViewModel,
+    navController: NavController
+) {
+    // Mapping week numbers (1-7) to their respective names
+    val weekDays = mapOf(
+        1 to "Mon", 2 to "Tue", 3 to "Wed", 4 to "Thu",
+        5 to "Fri", 6 to "Sat", 7 to "Sun"
+    )
+    val sortedWorkouts = workouts.sortedBy { it.workoutPlanning.weekDay }
+
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            if (sortedWorkouts.isEmpty()) {
+                NotFound("You have no workouts!")
+            } else {
+                sortedWorkouts.forEach { workoutWithPlanning ->
+                    val dayName = weekDays[workoutWithPlanning.workoutPlanning.weekDay] ?: "Unknown"
+                    Workout(
+                        workout = workoutWithPlanning.workout,
+                        workoutDay = dayName,
+                        onWorkoutClick = { navController.navigate("addWorkoutScreen/$it") }
+                    )
+                }
             }
         }
     }

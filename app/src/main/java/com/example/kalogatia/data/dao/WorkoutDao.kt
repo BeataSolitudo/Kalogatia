@@ -23,7 +23,7 @@ interface WorkoutDao {
 
     @Query("SELECT workout.name FROM workout INNER JOIN workoutPlanning ON workout.workoutId = workoutPlanning.workoutId WHERE workoutPlanning.weekDay = :day")
     suspend fun selectWorkoutByDay(day: Int): String?
-/*
-    @Query("SELECT * FROM workout INNER JOIN workoutPlanning ON workout.workoutId = workoutPlanning.workoutId;")
-    suspend fun getWorkoutWithWorkoutPlanning(): */
+
+    @Query("SELECT name FROM workout WHERE workoutId = :workoutId")
+    fun getWorkoutName(workoutId: Int): String?
 }

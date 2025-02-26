@@ -4,7 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Relation
 import com.example.kalogatia.data.entities.Workout
 import com.example.kalogatia.data.entities.WorkoutPlanning
-
+/*
 data class WorkoutWithWorkoutPlanning (
     @Embedded val workout: Workout,
     @Relation(
@@ -12,4 +12,14 @@ data class WorkoutWithWorkoutPlanning (
         entityColumn = "workoutId"
     )
     val workoutPlanning: List<WorkoutPlanning>
+)
+ */
+
+data class WorkoutWithWorkoutPlanning(
+    @Embedded val workoutPlanning: WorkoutPlanning,
+    @Relation(
+        parentColumn = "workoutId",
+        entityColumn = "workoutId"
+    )
+    val workout: Workout
 )

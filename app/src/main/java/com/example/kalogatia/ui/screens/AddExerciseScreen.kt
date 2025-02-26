@@ -111,6 +111,7 @@ fun TopBarAddExerciseScreen(modifier: Modifier) {
 fun ContentAddExercise(modifier: Modifier) {
     var name by remember { mutableStateOf("") }
     var restTime by remember { mutableStateOf("") }
+    var day by remember { mutableStateOf("") }
     var setsList by remember { mutableStateOf(emptyList<SetData>()) }
     val exercisesList = remember { mutableStateListOf<ExerciseData>() }
 
@@ -124,8 +125,42 @@ fun ContentAddExercise(modifier: Modifier) {
         Text(text = "Exercise name", color = Color.White, fontSize = 20.sp, modifier = Modifier.padding(start = 20.dp))
         MyTextField(value = name, onValueChange = { name = it }, placeholderText = "Type Exercise Name")
         Spacer(modifier = Modifier.height(12.dp))
-        Text(text = "Rest time", color = Color.White, fontSize = 20.sp, modifier = Modifier.padding(start = 20.dp))
-        MyTextField(value = restTime, onValueChange = { restTime = it }, placeholderText = "Type Rest Time in seconds")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Box(modifier = Modifier.weight(0.5f)) {
+                Column {
+                    Text(
+                        text = "Rest time",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(start = 20.dp)
+                    )
+                    MyTextField(
+                        value = restTime,
+                        onValueChange = { restTime = it },
+                        placeholderText = "Rest Time in s"  // Pridat masku pro (Mon, Tue, Wed....)
+                    )
+                }
+            }
+            Box(modifier = Modifier.weight(0.5f)) {
+                Column {
+                    Text(
+                        text = "Workout day",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(start = 20.dp)
+                    )
+                    MyTextField(
+                        value = day,
+                        onValueChange = { day = it },
+                        placeholderText = "Workout Day"
+                    )
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
         Text(text = "Sets", color = Color.White, fontSize = 20.sp, modifier = Modifier.padding(start = 20.dp))
         WorkoutSets()
@@ -350,7 +385,6 @@ fun SpecificSet(
         Box(modifier = Modifier.weight(0.2f), contentAlignment = Alignment.Center) { RemoveButton(onRemove) }
     }
 }
-
 
 data class SetData(
     val position: String,

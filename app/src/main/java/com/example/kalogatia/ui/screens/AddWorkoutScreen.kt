@@ -20,7 +20,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -29,8 +31,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,30 +46,74 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.kalogatia.data.entities.Exercise
+import com.example.kalogatia.data.dao.ExerciseWithType
 import com.example.kalogatia.ui.Buttons.PlayButton
-import com.example.kalogatia.ui.ContentLayout
 import com.example.kalogatia.ui.Divider
 import com.example.kalogatia.ui.NavigationLayout
 import com.example.kalogatia.ui.NotFound
-import com.example.kalogatia.ui.TopBarAddWorkoutScreen
+import com.example.kalogatia.viewmodels.AddWorkoutScreenViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AddWorkoutScreen(navController: NavController, onNavigate: (String) -> Unit) {
-    val exercises = remember { mutableStateListOf<Exercise>() }
-    val currentScreen = navController.currentBackStackEntry?.destination?.route ?: "Unknown"
+fun AddWorkoutScreen(
+    navController: NavController,
+    onNavigate: (String) -> Unit,
+    workoutId: Int?,
+    viewModel: AddWorkoutScreenViewModel = viewModel(factory = AddWorkoutScreenViewModel.provideFactory(workoutId)),
+) {
+    val exercisesWithType by viewModel.exercisesWithType.collectAsState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0E0E0E)).windowInsetsPadding(WindowInsets.systemBars),
+            .background(Color(0xFF0E0E0E))
+            .windowInsetsPadding(WindowInsets.systemBars),
     ) {
-        TopBarAddWorkoutScreen(modifier = Modifier.weight(0.15f))
+        TopBarAddWorkoutScreen(modifier = Modifier.weight(0.15f), viewModel, workoutId)
         Divider()
-        ContentLayout(modifier = Modifier.weight(0.75f), exercises, currentScreen)
+        AddWorkoutScreenContent(modifier = Modifier.weight(0.75f), exercisesWithType, viewModel)
         NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate)
+    }
+}
+
+@Composable
+fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewModel, workoutId: Int?) {
+    var showDialog by remember { mutableStateOf(false) }
+    var workoutName by remember { mutableStateOf("Type workout name") }
+
+    LaunchedEffect(workoutId) {
+        workoutId?.let { viewModel.fetchWorkoutName(it) }
+    }
+    val fetchedWorkoutName by viewModel.workoutName.collectAsState()
+
+    if (workoutId == null) {
+        workoutName = "Type workout name"
+    } else {
+        //workoutName = "Workout Name"
+        workoutName = fetchedWorkoutName
+    }
+    // Top Bar - Text, PLayButton
+    Box(
+        modifier = modifier
+            .fillMaxWidth(),
+        contentAlignment = Alignment.TopStart
+    ) {
+        TopBarAddWorkout(
+            workoutName = workoutName,
+            onTextClick = { showDialog = true }
+        )
+    }
+
+    if (showDialog) {
+        ChangeName(
+            onDismiss = { showDialog = false },
+            onEnter = { newName ->
+                workoutName = newName
+                showDialog = false
+            }
+        )
     }
 }
 
@@ -115,19 +162,26 @@ fun TopBarAddWorkout(workoutName: String, onTextClick: () -> Unit) {
 }
 
 @Composable
-fun Content() {
-    NotFound("You have no exercises in this wokrout")
-}
-
-@Composable
 fun Exercise(
-    id: Int = 0,
-    icon: String = "N/A",
-    exerciseName: String = "N/A",
-    restTime: Int = 0,
-    sets: List<Int> = listOf(0),
-    weight: List<Int> = listOf(0)
+    exerciseWithType: ExerciseWithType,
+    viewModel: AddWorkoutScreenViewModel
     ) {
+    LaunchedEffect(exerciseWithType.exercise.exerciseId) {
+        exerciseWithType.exercise.exerciseId?.let {
+            viewModel.countSetsByExerciseId(it)
+            viewModel.fetchMaxWeight(it)
+        }
+    }
+
+
+    //val counter by viewModel.counter.collectAsState()
+    val counters by viewModel.counters.collectAsState()
+    val counter = counters[exerciseWithType.exercise.exerciseId] ?: 0
+
+    val maxWeights by viewModel.maxWeights.collectAsState()
+    val maxWeight = maxWeights[exerciseWithType.exercise.exerciseId] ?: 0.0
+
+
     Box(
         modifier = Modifier
             .fillMaxWidth(0.9f)
@@ -147,18 +201,21 @@ fun Exercise(
                 ),
                 shape = RoundedCornerShape(16.dp)
             )
-            .padding(16.dp)
+            .padding(12.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .weight(0.7f),
-                contentAlignment = Alignment.TopStart
+                    .weight(0.5f)
+                    .padding(start = 2.dp),
+                contentAlignment = Alignment.TopStart,
             ) {
+                // Exercise name
                 Text(
-                    text = exerciseName,
+                    text = exerciseWithType.exerciseTypeName,
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
@@ -166,9 +223,36 @@ fun Exercise(
             }
             Box(
                 modifier = Modifier
-                    .weight(0.3f),
-                contentAlignment = Alignment.TopEnd
+                    .weight(0.25f),
+                contentAlignment = Alignment.Center,
             ) {
+                // Max weight
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "$maxWeight kg",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(text = "Max", color = Color.White)
+                }
+
+            }
+            Box(
+                modifier = Modifier
+                    .weight(0.25f),
+                contentAlignment = Alignment.Center
+            ) {
+                // Number of sets
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "$counter",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(text = "Sets", color = Color.White)
+                }
 
             }
         }
@@ -219,6 +303,33 @@ fun ChangeName(onDismiss: () -> Unit, onEnter: (String) -> Unit) {
                     }) {
                         Text("Enter")
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AddWorkoutScreenContent(
+    modifier: Modifier,
+    exercises: List<ExerciseWithType>,
+    viewModel: AddWorkoutScreenViewModel
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth(),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            if (exercises.isEmpty()) {
+                    NotFound("You have no exercises!")
+            } else {
+                exercises.forEach { exercise ->
+                    Exercise(exercise, viewModel)
                 }
             }
         }

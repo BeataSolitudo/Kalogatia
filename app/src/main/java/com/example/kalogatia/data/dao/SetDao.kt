@@ -4,8 +4,8 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
-import kotlinx.coroutines.flow.Flow
 import com.example.kalogatia.data.entities.Set
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SetDao {
@@ -31,4 +31,14 @@ interface SetDao {
             1
         }
     }
+
+    @Query("SELECT COUNT(*) FROM `Set` WHERE exerciseId = :exerciseId")
+    suspend fun countSetsByExerciseId(exerciseId: Int): Int
+
+    @Query("SELECT weight FROM `Set` WHERE exerciseId = :exerciseId")
+    fun fetchWeights(exerciseId: Int): Flow<List<Double>>
+
+    @Query("SELECT MAX(weight) FROM `Set` WHERE exerciseId = :exerciseId")
+    suspend fun getMaxWeightByExerciseId(exerciseId: Int): Double?
+
 }

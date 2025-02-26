@@ -7,7 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -21,7 +20,6 @@ import com.example.kalogatia.ui.screens.AddExerciseScreen
 import com.example.kalogatia.ui.screens.AddWorkoutScreen
 import com.example.kalogatia.ui.screens.MainScreen
 import com.example.kalogatia.ui.theme.KalogatiaTheme
-import com.example.kalogatia.viewmodels.MainScreenViewModel
 
 // ctrl + shift + r = replace all
 
@@ -46,6 +44,7 @@ class MainActivity : ComponentActivity() {
                 val historyWorkoutDao = DatabaseKalogatia.getInstance(this).historyWorkoutDao
                 val historyExerciseDao = DatabaseKalogatia.getInstance(this).historyExerciseDao
                 val historySetDao = DatabaseKalogatia.getInstance(this).historySetDao
+                val workoutWithWorkoutPlanningDao = DatabaseKalogatia.getInstance(this).workoutWithWorkoutPlanningDao
 
                 val users = listOf(
                     User("superuser", "example@gmail.com", "")
@@ -204,17 +203,19 @@ class MainActivity : ComponentActivity() {
                 }
 */
 
-                val viewModel: MainScreenViewModel = viewModel(factory = MainScreenViewModel.Factory)
                 val navController = rememberNavController()
 
-                NavHost(navController = navController, startDestination = "mainScreen") {
-                    composable("mainScreen") {
-                        MainScreen(navController, { route -> handleNavigation(navController, route) }, viewModel)
+                NavHost(navController = navController, startDestination = "mainScreen/") {
+                    composable("mainScreen/") {
+                        MainScreen(navController, { route -> handleNavigation(navController, route) })
                     }
-                    composable("addWorkoutScreen") {
-                        AddWorkoutScreen(navController) { route -> handleNavigation(navController, route) }
+
+                    composable("addWorkoutScreen/{workoutId}") { backStackEntry ->
+                        val workoutId = backStackEntry.arguments?.getString("workoutId")?.toIntOrNull()
+                        AddWorkoutScreen(navController, { route -> handleNavigation(navController, route) }, workoutId)
                     }
-                    composable("addExerciseScreen") {
+
+                    composable("addExerciseScreen/") {
                         AddExerciseScreen(navController) { route -> handleNavigation(navController, route) }
                     }
                 }

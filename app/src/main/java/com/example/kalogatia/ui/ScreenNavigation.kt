@@ -28,9 +28,9 @@ sealed class ScreenNavigation(
     @SuppressLint("SupportAnnotationUsage") @DrawableRes val unSelectedIconId: ImageVector,
     val route: String
 ) {
-    object Home : ScreenNavigation(id = 0, title ="Home", selectedIconId = Icons.Rounded.Home, unSelectedIconId = Icons.Rounded.Home, route = "mainScreen")
+    object Home : ScreenNavigation(id = 0, title ="Home", selectedIconId = Icons.Rounded.Home, unSelectedIconId = Icons.Rounded.Home, route = "mainScreen/")
     object Calendar : ScreenNavigation(id = 1, title ="Calendar", selectedIconId = Icons.Rounded.CalendarMonth, unSelectedIconId = Icons.Rounded.CalendarMonth, route = "")
-    object Add : ScreenNavigation(id = 1, title ="Add", selectedIconId = Icons.Rounded.Add, unSelectedIconId = Icons.Rounded.Add, route = "addWorkoutScreen")
+    object Add : ScreenNavigation(id = 1, title ="Add", selectedIconId = Icons.Rounded.Add, unSelectedIconId = Icons.Rounded.Add, route = "addWorkoutScreen/{workoutId}")
     object Graph : ScreenNavigation(id = 1, title ="Graph", selectedIconId = Icons.Rounded.AutoGraph, unSelectedIconId = Icons.Rounded.AutoGraph, route = "")
     object Settings : ScreenNavigation(id = 1, title ="Settings", selectedIconId = Icons.Rounded.Settings, unSelectedIconId = Icons.Rounded.Settings, route = "")
 }
@@ -44,7 +44,7 @@ fun Navigation(navController: NavController, onNavigate: (String) -> Unit) {
     ) {
         NavItem(item = ScreenNavigation.Home, isSelected = (currentRoute == ScreenNavigation.Home.route), onNavigate)
         NavItem(item = ScreenNavigation.Graph, isSelected = (currentRoute == ScreenNavigation.Graph.route), onNavigate)
-        NavItem(item = ScreenNavigation.Add, isSelected = (currentRoute == ScreenNavigation.Add.route || currentRoute == "addExerciseScreen"), onNavigate)
+        NavItem(item = ScreenNavigation.Add, isSelected = (currentRoute == ScreenNavigation.Add.route || currentRoute == "addExerciseScreen/"), onNavigate)
         NavItem(item = ScreenNavigation.Calendar, isSelected = (currentRoute == ScreenNavigation.Calendar.route), onNavigate)
         NavItem(item = ScreenNavigation.Settings, isSelected = (currentRoute == ScreenNavigation.Settings.route), onNavigate)
     }
@@ -71,8 +71,8 @@ fun NavItem(item: ScreenNavigation, isSelected: Boolean, onNavigate: (String) ->
 fun handleNavigation(navController: NavController, route: String) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
-    if (currentRoute == "addWorkoutScreen" && route == "addWorkoutScreen") {
-        navController.navigate("addExerciseScreen")
+    if (currentRoute == "addWorkoutScreen/{workoutId}" && route == "addWorkoutScreen/{workoutId}") {
+        navController.navigate("addExerciseScreen/")
     } else {
         navController.navigate(route)
     }
@@ -81,7 +81,7 @@ fun handleNavigation(navController: NavController, route: String) {
 fun isSelected(navController: NavController): Boolean {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
-    if(currentRoute == "mainScreen") {
+    if(currentRoute == "mainScreen/") {
         return true
     } else {
         return false

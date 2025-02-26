@@ -17,4 +17,7 @@ interface WorkoutPlanningDao {
 
     @Query("SELECT * FROM workoutPlanning")
     fun selectAllWorkoutPlanning(): Flow<List<WorkoutPlanning>>
+
+    @Query("SELECT weekDay FROM workoutplanning WHERE workoutId = :workoutId LIMIT 1")
+    fun getWorkoutDay(workoutId: Int): Int
 }

@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.kalogatia.data.dao.ExerciseDao
 import com.example.kalogatia.data.dao.ExerciseTypeDao
+import com.example.kalogatia.data.dao.ExerciseTypeWithExerciseDao
 import com.example.kalogatia.data.dao.HistoryExerciseDao
 import com.example.kalogatia.data.dao.HistorySetDao
 import com.example.kalogatia.data.dao.HistoryWorkoutDao
@@ -13,14 +14,15 @@ import com.example.kalogatia.data.dao.SetDao
 import com.example.kalogatia.data.dao.UserDao
 import com.example.kalogatia.data.dao.WorkoutDao
 import com.example.kalogatia.data.dao.WorkoutPlanningDao
+import com.example.kalogatia.data.dao.WorkoutWithWorkoutPlanningDao
 import com.example.kalogatia.data.entities.Exercise
 import com.example.kalogatia.data.entities.ExerciseType
 import com.example.kalogatia.data.entities.HistoryExercise
 import com.example.kalogatia.data.entities.HistorySet
 import com.example.kalogatia.data.entities.HistoryWorkout
-import com.example.kalogatia.data.entities.Workout
 import com.example.kalogatia.data.entities.Set
 import com.example.kalogatia.data.entities.User
+import com.example.kalogatia.data.entities.Workout
 import com.example.kalogatia.data.entities.WorkoutPlanning
 
 @Database(
@@ -37,6 +39,8 @@ abstract class DatabaseKalogatia: RoomDatabase() {
     abstract val historyWorkoutDao: HistoryWorkoutDao
     abstract val historyExerciseDao: HistoryExerciseDao
     abstract val historySetDao: HistorySetDao
+    abstract val workoutWithWorkoutPlanningDao: WorkoutWithWorkoutPlanningDao
+    abstract val exerciseTypeWithExerciseDao: ExerciseTypeWithExerciseDao
 
     companion object {
         @Volatile // Whenever we change value of valuable INSTANCE, this change is immediately visible to other threads, so it basically prevents race condition

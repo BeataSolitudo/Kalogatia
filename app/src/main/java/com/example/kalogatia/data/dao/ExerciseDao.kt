@@ -30,4 +30,7 @@ interface ExerciseDao {
         val exerciseTypeId = getExerciseTypeIdByName(exerciseName)
         return exerciseTypeId?.let { getExerciseIdByTypeId(it) }
     }
+
+    @Query("SELECT * FROM exercise WHERE workoutId = :workoutId")
+    fun getExercisesForWorkout(workoutId: Int): Flow<List<Exercise>>
 }
