@@ -44,7 +44,7 @@ fun Navigation(navController: NavController, onNavigate: (String) -> Unit) {
     ) {
         NavItem(item = ScreenNavigation.Home, isSelected = (currentRoute == ScreenNavigation.Home.route), onNavigate)
         NavItem(item = ScreenNavigation.Graph, isSelected = (currentRoute == ScreenNavigation.Graph.route), onNavigate)
-        NavItem(item = ScreenNavigation.Add, isSelected = (currentRoute == ScreenNavigation.Add.route || currentRoute == "addExerciseScreen/"), onNavigate)
+        NavItem(item = ScreenNavigation.Add, isSelected = (currentRoute == ScreenNavigation.Add.route || currentRoute == "addExerciseScreen/{exerciseId}"), onNavigate)
         NavItem(item = ScreenNavigation.Calendar, isSelected = (currentRoute == ScreenNavigation.Calendar.route), onNavigate)
         NavItem(item = ScreenNavigation.Settings, isSelected = (currentRoute == ScreenNavigation.Settings.route), onNavigate)
     }
@@ -72,19 +72,8 @@ fun handleNavigation(navController: NavController, route: String) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
     if (currentRoute == "addWorkoutScreen/{workoutId}" && route == "addWorkoutScreen/{workoutId}") {
-        navController.navigate("addExerciseScreen/")
+        navController.navigate("addExerciseScreen/{exerciseId}")
     } else {
         navController.navigate(route)
     }
 }
-
-fun isSelected(navController: NavController): Boolean {
-    val currentRoute = navController.currentBackStackEntry?.destination?.route
-
-    if(currentRoute == "mainScreen/") {
-        return true
-    } else {
-        return false
-    }
-}
-

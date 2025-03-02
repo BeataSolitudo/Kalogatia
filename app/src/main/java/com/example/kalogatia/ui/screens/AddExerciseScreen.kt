@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -53,11 +54,27 @@ import com.example.kalogatia.ui.Buttons.DoneButton
 import com.example.kalogatia.ui.Buttons.RemoveButton
 import com.example.kalogatia.ui.Divider
 import com.example.kalogatia.ui.NavigationLayout
+import com.example.kalogatia.viewmodels.SharedViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AddExerciseScreen(navController: NavController, onNavigate: (String) -> Unit) {
-    val currentScreen = navController.currentBackStackEntry?.destination?.route ?: "Unknown"
+fun AddExerciseScreen(
+    navController: NavController,
+    onNavigate: (String) -> Unit,
+    exerciseId: Int?,
+    sharedViewModel: SharedViewModel
+) {
+    LaunchedEffect(navController) {
+        // Monitor back stack changes
+        navController.currentBackStackEntryFlow.collect { backStackEntry ->
+            // Reset tmpWorkoutname when navigating to the "mainScreen"
+            println("Back stack entry: "+backStackEntry.destination.route)
+            if ( backStackEntry.destination.route != "addExerciseScreen/{exerciseId}" && backStackEntry.destination.route != "addWorkoutScreen/{workoutId}") {
+                sharedViewModel.saveTmpWorkoutName(null)
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,7 +83,6 @@ fun AddExerciseScreen(navController: NavController, onNavigate: (String) -> Unit
     ) {
         // Top Bar - TodayWorkout, AddButton, StartButton
         TopBarAddExerciseScreen(modifier = Modifier.weight(0.15f))
-        //TopBarLayout(modifier = Modifier.weight(0.15f), workoutDao = null, currentScreen)
         Divider()
         // Content - Workouts
         ContentAddExercise(modifier = Modifier.weight(0.75f), )
@@ -274,7 +290,8 @@ fun AddSetButton(onClick: () -> Unit) {
         modifier = Modifier
             .clickable { onClick() }
             .fillMaxWidth()
-            .background(Color(0xFF363352), shape = RoundedCornerShape(10.dp)).height(35.dp),
+            .background(Color(0xFF363352), shape = RoundedCornerShape(10.dp))
+            .height(35.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(text = "ADD SET", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)

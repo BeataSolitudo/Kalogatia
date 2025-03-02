@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -20,6 +21,7 @@ import com.example.kalogatia.ui.screens.AddExerciseScreen
 import com.example.kalogatia.ui.screens.AddWorkoutScreen
 import com.example.kalogatia.ui.screens.MainScreen
 import com.example.kalogatia.ui.theme.KalogatiaTheme
+import com.example.kalogatia.viewmodels.SharedViewModel
 
 // ctrl + shift + r = replace all
 
@@ -204,6 +206,7 @@ class MainActivity : ComponentActivity() {
 */
 
                 val navController = rememberNavController()
+                val sharedViewModel: SharedViewModel = viewModel()
 
                 NavHost(navController = navController, startDestination = "mainScreen/") {
                     composable("mainScreen/") {
@@ -212,11 +215,12 @@ class MainActivity : ComponentActivity() {
 
                     composable("addWorkoutScreen/{workoutId}") { backStackEntry ->
                         val workoutId = backStackEntry.arguments?.getString("workoutId")?.toIntOrNull()
-                        AddWorkoutScreen(navController, { route -> handleNavigation(navController, route) }, workoutId)
+                        AddWorkoutScreen(navController, { route -> handleNavigation(navController, route) }, workoutId, sharedViewModel)
                     }
 
-                    composable("addExerciseScreen/") {
-                        AddExerciseScreen(navController) { route -> handleNavigation(navController, route) }
+                    composable("addExerciseScreen/{exerciseId}") { backStackEntry ->
+                        val exerciseId = backStackEntry.arguments?.getString("exerciseId")?.toIntOrNull()
+                        AddExerciseScreen(navController, { route -> handleNavigation(navController, route) }, exerciseId, sharedViewModel)
                     }
                 }
 

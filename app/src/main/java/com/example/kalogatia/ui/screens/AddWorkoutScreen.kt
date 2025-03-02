@@ -3,6 +3,7 @@ package com.example.kalogatia.ui.screens
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -23,9 +24,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -54,6 +54,7 @@ import com.example.kalogatia.ui.Divider
 import com.example.kalogatia.ui.NavigationLayout
 import com.example.kalogatia.ui.NotFound
 import com.example.kalogatia.viewmodels.AddWorkoutScreenViewModel
+import com.example.kalogatia.viewmodels.SharedViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -61,9 +62,22 @@ fun AddWorkoutScreen(
     navController: NavController,
     onNavigate: (String) -> Unit,
     workoutId: Int?,
-    viewModel: AddWorkoutScreenViewModel = viewModel(factory = AddWorkoutScreenViewModel.provideFactory(workoutId)),
+    sharedViewModel: SharedViewModel
 ) {
+
+    val viewModel: AddWorkoutScreenViewModel = viewModel(factory = AddWorkoutScreenViewModel.provideFactory(workoutId))
     val exercisesWithType by viewModel.exercisesWithType.collectAsState()
+
+    LaunchedEffect(navController) {
+        // Monitor back stack changes
+        navController.currentBackStackEntryFlow.collect { backStackEntry ->
+            // Reset tmpWorkoutname when navigating to the "mainScreen"
+            println("Back stack entry: "+backStackEntry.destination.route)
+            if ( backStackEntry.destination.route != "addExerciseScreen/{exerciseId}" && backStackEntry.destination.route != "addWorkoutScreen/{workoutId}") {
+                sharedViewModel.saveTmpWorkoutName(null)
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -71,100 +85,18 @@ fun AddWorkoutScreen(
             .background(Color(0xFF0E0E0E))
             .windowInsetsPadding(WindowInsets.systemBars),
     ) {
-        TopBarAddWorkoutScreen(modifier = Modifier.weight(0.15f), viewModel, workoutId)
+        TopBarAddWorkoutScreen(modifier = Modifier.weight(0.15f), viewModel, workoutId, sharedViewModel)
         Divider()
-        AddWorkoutScreenContent(modifier = Modifier.weight(0.75f), exercisesWithType, viewModel)
+        AddWorkoutScreenContent(modifier = Modifier.weight(0.75f), exercisesWithType, viewModel, navController)
         NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate)
-    }
-}
-
-@Composable
-fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewModel, workoutId: Int?) {
-    var showDialog by remember { mutableStateOf(false) }
-    var workoutName by remember { mutableStateOf("Type workout name") }
-
-    LaunchedEffect(workoutId) {
-        workoutId?.let { viewModel.fetchWorkoutName(it) }
-    }
-    val fetchedWorkoutName by viewModel.workoutName.collectAsState()
-
-    if (workoutId == null) {
-        workoutName = "Type workout name"
-    } else {
-        //workoutName = "Workout Name"
-        workoutName = fetchedWorkoutName
-    }
-    // Top Bar - Text, PLayButton
-    Box(
-        modifier = modifier
-            .fillMaxWidth(),
-        contentAlignment = Alignment.TopStart
-    ) {
-        TopBarAddWorkout(
-            workoutName = workoutName,
-            onTextClick = { showDialog = true }
-        )
-    }
-
-    if (showDialog) {
-        ChangeName(
-            onDismiss = { showDialog = false },
-            onEnter = { newName ->
-                workoutName = newName
-                showDialog = false
-            }
-        )
-    }
-}
-
-@Composable
-fun TopBarAddWorkout(workoutName: String, onTextClick: () -> Unit) {
-    val isDefaultName = workoutName == "Type workout name"
-
-    val infiniteTransition = rememberInfiniteTransition()
-    val animatedColor by infiniteTransition.animateColor(
-        initialValue = Color.White,
-        targetValue = Color(0xFF9C27B0),
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1000),
-            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
-        )
-    )
-
-    Row(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Box(
-            modifier = Modifier
-                .weight(0.7f)
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Column {
-                Text(text = "Exercises", fontSize = 40.sp, fontWeight = FontWeight(weight = 800), color = Color.White)
-                Text(
-                    text = workoutName,
-                    color = if (isDefaultName) animatedColor else Color.White,
-                    modifier = Modifier.clickable { onTextClick() }
-                )
-            }
-        }
-        Box(
-            modifier = Modifier
-                .weight(0.3f)
-                .fillMaxSize()
-                .padding(end = 15.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            PlayButton()
-        }
     }
 }
 
 @Composable
 fun Exercise(
     exerciseWithType: ExerciseWithType,
-    viewModel: AddWorkoutScreenViewModel
+    viewModel: AddWorkoutScreenViewModel,
+    onExerciseClick: (Int) -> Unit
     ) {
     LaunchedEffect(exerciseWithType.exercise.exerciseId) {
         exerciseWithType.exercise.exerciseId?.let {
@@ -173,8 +105,6 @@ fun Exercise(
         }
     }
 
-
-    //val counter by viewModel.counter.collectAsState()
     val counters by viewModel.counters.collectAsState()
     val counter = counters[exerciseWithType.exercise.exerciseId] ?: 0
 
@@ -202,6 +132,7 @@ fun Exercise(
                 shape = RoundedCornerShape(16.dp)
             )
             .padding(12.dp)
+            .clickable { exerciseWithType.exercise.exerciseId?.let { onExerciseClick(it) } }
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -259,15 +190,99 @@ fun Exercise(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChangeName(onDismiss: () -> Unit, onEnter: (String) -> Unit) {
+fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewModel, workoutId: Int?, sharedViewModel: SharedViewModel) {
+    val openDialog = remember { mutableStateOf(false) }
+    var workoutName by remember { mutableStateOf("Type workout name") }
+    val fetchedWorkoutName by viewModel.workoutName.collectAsState()
+    val infiniteTransition = rememberInfiniteTransition(label = "infinite transition")
+    val animatedColor by infiniteTransition.animateColor(
+        initialValue = Color(0xFFFFA500),
+        targetValue = Color(0xFF9C27B0),
+        animationSpec = infiniteRepeatable(tween(1000), RepeatMode.Reverse),
+        label = "color"
+    )
+    sharedViewModel.saveWorkoutName(sharedViewModel.tmpWorkoutName.value?:workoutName)
+
+    // Fetch workout name only if workoutId is not null
+    LaunchedEffect(workoutId) {
+        if (workoutId != null) {
+            viewModel.fetchWorkoutName(workoutId)
+        } else {
+            workoutName = "Type workout name"
+        }
+    }
+
+    // Update workout name when fetchedWorkoutName changes
+    LaunchedEffect(fetchedWorkoutName) {
+        if (workoutId != null && fetchedWorkoutName.isNotEmpty()) {
+            workoutName = fetchedWorkoutName
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth(),
+        contentAlignment = Alignment.TopStart
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(0.7f)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column {
+                    Text(text = "Exercises", fontSize = 40.sp, fontWeight = FontWeight(weight = 800), color = Color.White)
+                    Text(
+                        text = sharedViewModel.workoutName.value?:workoutName,
+                        color = if (workoutName == "Type workout name") {animatedColor} else { Color.White },
+                        modifier = Modifier.clickable {
+                            openDialog.value = true
+                        }
+                    )
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .weight(0.3f)
+                    .fillMaxSize()
+                    .padding(end = 15.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                PlayButton()
+            }
+        }
+    }
+
+    if (openDialog.value) {
+        DialogWithInput(
+            onDismissRequest = { openDialog.value = false },
+            onConfirmation = { newWorkoutName ->
+                // workoutName = newWorkoutName
+                sharedViewModel.saveTmpWorkoutName(newWorkoutName)
+                openDialog.value = false
+            }
+        )
+    }
+}
+
+@Composable
+fun DialogWithInput(
+    onDismissRequest: () -> Unit,
+    onConfirmation: (String) -> Unit,
+) {
     var textFieldValue by remember { mutableStateOf("") }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Surface (
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.background
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -285,22 +300,26 @@ fun ChangeName(onDismiss: () -> Unit, onEnter: (String) -> Unit) {
                     placeholder = { Text("Workout Name") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent)
+                    colors = TextFieldDefaults.colors(
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-
+                // Buttons "Dismiss" & "Enter"
                 Row(
                     horizontalArrangement = Arrangement.End,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancel")
+                    TextButton(
+                        onClick = { onDismissRequest() },
+                    ) {
+                        Text("Dismiss")
                     }
-                    TextButton(onClick = {
-                        onEnter(textFieldValue)
-                        onDismiss()
-                    }) {
+                    TextButton(
+                        onClick = { onConfirmation(textFieldValue) },
+                    ) {
                         Text("Enter")
                     }
                 }
@@ -313,7 +332,8 @@ fun ChangeName(onDismiss: () -> Unit, onEnter: (String) -> Unit) {
 fun AddWorkoutScreenContent(
     modifier: Modifier,
     exercises: List<ExerciseWithType>,
-    viewModel: AddWorkoutScreenViewModel
+    viewModel: AddWorkoutScreenViewModel,
+    navController: NavController
 ) {
     Box(
         modifier = modifier
@@ -329,7 +349,7 @@ fun AddWorkoutScreenContent(
                     NotFound("You have no exercises!")
             } else {
                 exercises.forEach { exercise ->
-                    Exercise(exercise, viewModel)
+                    Exercise(exercise, viewModel, onExerciseClick = { navController.navigate("addExerciseScreen/$it") })
                 }
             }
         }
