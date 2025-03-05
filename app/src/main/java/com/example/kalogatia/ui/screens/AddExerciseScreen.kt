@@ -1,5 +1,6 @@
 package com.example.kalogatia.ui.screens
 
+import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -29,8 +30,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,12 +50,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.kalogatia.data.entities.Set
 import com.example.kalogatia.ui.Buttons.DoneButton
 import com.example.kalogatia.ui.Buttons.RemoveButton
 import com.example.kalogatia.ui.Divider
 import com.example.kalogatia.ui.NavigationLayout
+import com.example.kalogatia.viewmodels.AddExerciseScreenViewModel
 import com.example.kalogatia.viewmodels.SharedViewModel
+import com.example.kalogatia.viewmodels.changedSet
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -64,11 +69,10 @@ fun AddExerciseScreen(
     exerciseId: Int?,
     sharedViewModel: SharedViewModel
 ) {
+    val viewModel: AddExerciseScreenViewModel = viewModel(factory = AddExerciseScreenViewModel.provideFactory(exerciseId))
+
     LaunchedEffect(navController) {
-        // Monitor back stack changes
         navController.currentBackStackEntryFlow.collect { backStackEntry ->
-            // Reset tmpWorkoutname when navigating to the "mainScreen"
-            println("Back stack entry: "+backStackEntry.destination.route)
             if ( backStackEntry.destination.route != "addExerciseScreen/{exerciseId}" && backStackEntry.destination.route != "addWorkoutScreen/{workoutId}") {
                 sharedViewModel.saveTmpWorkoutName(null)
             }
@@ -85,7 +89,7 @@ fun AddExerciseScreen(
         TopBarAddExerciseScreen(modifier = Modifier.weight(0.15f))
         Divider()
         // Content - Workouts
-        ContentAddExercise(modifier = Modifier.weight(0.75f), )
+        ContentAddExercise(modifier = Modifier.weight(0.75f), viewModel, exerciseId)
         // Bottom Bar - Navigation
         NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate)
     }
@@ -123,13 +127,48 @@ fun TopBarAddExerciseScreen(modifier: Modifier) {
     }
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun ContentAddExercise(modifier: Modifier) {
-    var name by remember { mutableStateOf("") }
+fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel, exerciseId: Int?) {
+    var name by remember { mutableStateOf("Type exercise name") }
     var restTime by remember { mutableStateOf("") }
     var day by remember { mutableStateOf("") }
-    var setsList by remember { mutableStateOf(emptyList<SetData>()) }
-    val exercisesList = remember { mutableStateListOf<ExerciseData>() }
+    val fetchedExerciseWithType by viewModel.exercisesWithType.collectAsState()
+    val fetchedWeekDay by viewModel.weekDay.collectAsState()
+    val fetchedSets by viewModel.sets.collectAsState()
+    val weekDays = mapOf(
+        1 to "Mon", 2 to "Tue", 3 to "Wed", 4 to "Thu",
+        5 to "Fri", 6 to "Sat", 7 to "Sun"
+    )
+
+    LaunchedEffect(exerciseId) {
+        if (exerciseId != null) {
+            viewModel.fetchExerciseAccessories(exerciseId)
+            viewModel.fetchSets(exerciseId)
+        } else {
+            name = ""
+            restTime = ""
+            day = ""
+        }
+    }
+
+    LaunchedEffect(fetchedExerciseWithType?.exercise?.workoutId) {
+        fetchedExerciseWithType?.exercise?.let {
+            viewModel.fetchWorkoutDay(it.workoutId)
+        }
+    }
+
+    LaunchedEffect(fetchedExerciseWithType, fetchedWeekDay) {
+        fetchedExerciseWithType?.let {
+            name = it.exerciseTypeName
+            restTime = it.exercise.restTime.toString()
+        }
+
+        fetchedWeekDay?.let {
+            val dayName = weekDays[it] ?: "Unknown"
+            day = dayName
+        }
+    }
 
     Column(
         modifier = modifier
@@ -139,7 +178,7 @@ fun ContentAddExercise(modifier: Modifier) {
         horizontalAlignment = Alignment.Start
     ) {
         Text(text = "Exercise name", color = Color.White, fontSize = 20.sp, modifier = Modifier.padding(start = 20.dp))
-        MyTextField(value = name, onValueChange = { name = it }, placeholderText = "Type Exercise Name")
+        MyTextField(value = name, onValueChange = { name = it }, placeholderText = "Type exercise name")
         Spacer(modifier = Modifier.height(12.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -179,7 +218,7 @@ fun ContentAddExercise(modifier: Modifier) {
 
         Spacer(modifier = Modifier.height(12.dp))
         Text(text = "Sets", color = Color.White, fontSize = 20.sp, modifier = Modifier.padding(start = 20.dp))
-        WorkoutSets()
+        WorkoutSets(fetchedSets)
     }
 }
 
@@ -229,8 +268,11 @@ fun MyTextField(
 }
 
 @Composable
-fun WorkoutSets() {
-    var setsList by remember { mutableStateOf(emptyList<SetData>()) }
+fun WorkoutSets(fetchedSets: List<Set>) {
+    var setsList by remember { mutableStateOf(fetchedSets.toMutableList()) }
+    var removedSets by remember { mutableStateOf(emptyList<Set>()) }
+
+    var newSet: changedSet
 
     Column(
         modifier = Modifier
@@ -263,23 +305,26 @@ fun WorkoutSets() {
             Box(modifier = Modifier.weight(0.2f), contentAlignment = Alignment.Center) { Text(text = "RM", color = Color(0xFFB3B3B3)) }
         }
 
-        setsList.forEachIndexed { index, set ->
+        fetchedSets.forEachIndexed { index, set ->
             SpecificSet(
                 order = (index + 1).toString(),
-                prev = set.prev,
-                weight = set.weight,
-                reps = set.reps,
-                onRemove = { setsList = setsList.filterIndexed { i, _ -> i != index } }
+                prev = "-",
+                weightF = set.weight.toString(),
+                reps = set.repetition.toString(),
+                onRemove = {
+                    removedSets = removedSets + set
+                    setsList = setsList.filterIndexed { i, _ -> i != index }.toMutableList() // Mby .toMutableList() is bd
+                }
             )
         }
 
         AddSetButton {
-            setsList = setsList + SetData(
+            setsList = (setsList + SetData(
                 position = (setsList.size + 1).toString(),
                 prev = "-",
                 weight = "0 kg",
                 reps = "0"
-            )
+            )) as MutableList<Set>
         }
     }
 }
@@ -302,7 +347,7 @@ fun AddSetButton(onClick: () -> Unit) {
 fun SpecificSet(
     order: String,
     prev: String = "-",
-    weight: String = "",
+    weightF: String = "",
     reps: String = "",
     onRemove: () -> Unit
 ) {
@@ -310,6 +355,11 @@ fun SpecificSet(
     var rep by remember { mutableStateOf("") }
     var isFocusedWeight by remember { mutableStateOf(false) }
     var isFocusedRep by remember { mutableStateOf(false) }
+
+    LaunchedEffect(order) {
+        rep = reps
+        weight = weightF
+    }
 
     Row(
         modifier = Modifier
@@ -408,10 +458,4 @@ data class SetData(
     val prev: String,
     val weight: String,
     val reps: String
-)
-
-data class ExerciseData(
-    val exerciseName: String,
-    val restTime: String,
-    val sets: List<SetData>
 )

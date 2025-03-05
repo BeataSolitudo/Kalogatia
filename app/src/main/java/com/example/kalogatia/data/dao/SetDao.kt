@@ -41,4 +41,6 @@ interface SetDao {
     @Query("SELECT MAX(weight) FROM `Set` WHERE exerciseId = :exerciseId")
     suspend fun getMaxWeightByExerciseId(exerciseId: Int): Double?
 
+    @Query("SELECT * FROM `set` WHERE exerciseId = :exerciseId")
+    fun fetchSetsByExerciseId(exerciseId: Int): Flow<List<Set>>
 }

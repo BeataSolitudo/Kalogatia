@@ -8,23 +8,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ExerciseTypeWithExerciseDao {
-    /*
-    @Query("SELECT * FROM ExerciseType INNER JOIN Exercise ON ExerciseType.exerciseTypeId = Exercise.exerciseTypeId")
-    fun fetchExerciseWithExerciseTypeById(workoutId: Int): Flow<List<ExerciseTypeWithExercises>>
-*/
-
-/*
-    @Query("""
-    SELECT * FROM ExerciseType 
-    INNER JOIN Exercise ON ExerciseType.exerciseTypeId = Exercise.exerciseTypeId 
-    WHERE Exercise.workoutId = :workoutId
-""")
-    fun fetchExerciseWithExerciseTypeById(workoutId: Int): Flow<List<ExerciseTypeWithExercises>>
-*/
-    /*
-    @Query("SELECT * FROM exercise INNER JOIN exercise.ExerciseType ON exerciseType.exerciseTypeId WHERE exercise.workoutId = :workoutId")
-    fun fetchExerciseWithExerciseTypeById(workoutId: Int): Flow<List<ExerciseTypeWithExercises>>
-*/
     @Query("""
     SELECT Exercise.*, ExerciseType.name as exerciseTypeName
     FROM Exercise
@@ -33,6 +16,13 @@ interface ExerciseTypeWithExerciseDao {
 """)
     fun fetchExerciseWithExerciseTypeById(workoutId: Int): Flow<List<ExerciseWithType>>
 
+    @Query("""
+    SELECT Exercise.*, ExerciseType.name as exerciseTypeName
+    FROM Exercise
+    INNER JOIN ExerciseType ON Exercise.exerciseTypeId = ExerciseType.exerciseTypeId
+    WHERE Exercise.exerciseId = :exerciseId
+""")
+    fun fetchExerciseWithExerciseType(exerciseId: Int): Flow<ExerciseWithType>
 }
 
 data class ExerciseWithType(

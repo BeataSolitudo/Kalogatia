@@ -69,10 +69,7 @@ fun AddWorkoutScreen(
     val exercisesWithType by viewModel.exercisesWithType.collectAsState()
 
     LaunchedEffect(navController) {
-        // Monitor back stack changes
         navController.currentBackStackEntryFlow.collect { backStackEntry ->
-            // Reset tmpWorkoutname when navigating to the "mainScreen"
-            println("Back stack entry: "+backStackEntry.destination.route)
             if ( backStackEntry.destination.route != "addExerciseScreen/{exerciseId}" && backStackEntry.destination.route != "addWorkoutScreen/{workoutId}") {
                 sharedViewModel.saveTmpWorkoutName(null)
             }
@@ -202,7 +199,7 @@ fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewMo
         animationSpec = infiniteRepeatable(tween(1000), RepeatMode.Reverse),
         label = "color"
     )
-    sharedViewModel.saveWorkoutName(sharedViewModel.tmpWorkoutName.value?:workoutName)
+    sharedViewModel.saveWorkoutName(workoutName)
 
     // Fetch workout name only if workoutId is not null
     LaunchedEffect(workoutId) {
@@ -237,7 +234,7 @@ fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewMo
                 Column {
                     Text(text = "Exercises", fontSize = 40.sp, fontWeight = FontWeight(weight = 800), color = Color.White)
                     Text(
-                        text = sharedViewModel.workoutName.value?:workoutName,
+                        text = sharedViewModel.tmpWorkoutName.value?:workoutName,
                         color = if (workoutName == "Type workout name") {animatedColor} else { Color.White },
                         modifier = Modifier.clickable {
                             openDialog.value = true
