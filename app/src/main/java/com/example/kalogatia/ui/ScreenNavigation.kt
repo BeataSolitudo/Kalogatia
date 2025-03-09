@@ -32,7 +32,7 @@ sealed class ScreenNavigation(
     object Calendar : ScreenNavigation(id = 1, title ="Calendar", selectedIconId = Icons.Rounded.CalendarMonth, unSelectedIconId = Icons.Rounded.CalendarMonth, route = "")
     object Add : ScreenNavigation(id = 1, title ="Add", selectedIconId = Icons.Rounded.Add, unSelectedIconId = Icons.Rounded.Add, route = "addWorkoutScreen/{workoutId}")
     object Graph : ScreenNavigation(id = 1, title ="Graph", selectedIconId = Icons.Rounded.AutoGraph, unSelectedIconId = Icons.Rounded.AutoGraph, route = "")
-    object Settings : ScreenNavigation(id = 1, title ="Settings", selectedIconId = Icons.Rounded.Settings, unSelectedIconId = Icons.Rounded.Settings, route = "")
+    object Settings : ScreenNavigation(id = 1, title ="Settings", selectedIconId = Icons.Rounded.Settings, unSelectedIconId = Icons.Rounded.Settings, route = "settingsScreen/")
 }
 
 @Composable

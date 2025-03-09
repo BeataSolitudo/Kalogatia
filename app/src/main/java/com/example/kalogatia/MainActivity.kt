@@ -20,6 +20,7 @@ import com.example.kalogatia.ui.handleNavigation
 import com.example.kalogatia.ui.screens.AddExerciseScreen
 import com.example.kalogatia.ui.screens.AddWorkoutScreen
 import com.example.kalogatia.ui.screens.MainScreen
+import com.example.kalogatia.ui.screens.SettingsScreen
 import com.example.kalogatia.ui.theme.KalogatiaTheme
 import com.example.kalogatia.viewmodels.SharedViewModel
 
@@ -221,6 +222,9 @@ class MainActivity : ComponentActivity() {
                     composable("addExerciseScreen/{exerciseId}") { backStackEntry ->
                         val exerciseId = backStackEntry.arguments?.getString("exerciseId")?.toIntOrNull()
                         AddExerciseScreen(navController, { route -> handleNavigation(navController, route) }, exerciseId, sharedViewModel)
+                    }
+                    composable("settingsScreen/") {
+                        SettingsScreen(navController) { route -> handleNavigation(navController, route) }
                     }
                 }
 
