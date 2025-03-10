@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,9 +56,9 @@ import com.example.kalogatia.ui.Buttons.DoneButton
 import com.example.kalogatia.ui.Buttons.RemoveButton
 import com.example.kalogatia.ui.Divider
 import com.example.kalogatia.ui.NavigationLayout
+import com.example.kalogatia.ui.theme.AppColorScheme
 import com.example.kalogatia.viewmodels.AddExerciseScreenViewModel
 import com.example.kalogatia.viewmodels.SharedViewModel
-import com.example.kalogatia.viewmodels.changedSet
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -70,6 +69,7 @@ fun AddExerciseScreen(
     sharedViewModel: SharedViewModel
 ) {
     val viewModel: AddExerciseScreenViewModel = viewModel(factory = AddExerciseScreenViewModel.provideFactory(exerciseId))
+    val theme by sharedViewModel.currentTheme.collectAsState()
 
     LaunchedEffect(navController) {
         navController.currentBackStackEntryFlow.collect { backStackEntry ->
@@ -82,21 +82,21 @@ fun AddExerciseScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0E0E0E))
+            .background(theme.backgroundColor)
             .windowInsetsPadding(WindowInsets.systemBars),
     ) {
         // Top Bar - TodayWorkout, AddButton, StartButton
-        TopBarAddExerciseScreen(modifier = Modifier.weight(0.15f))
-        Divider()
+        TopBarAddExerciseScreen(modifier = Modifier.weight(0.15f), theme)
+        Divider(modifier = Modifier.background(theme.dividerColor))
         // Content - Workouts
-        ContentAddExercise(modifier = Modifier.weight(0.75f), viewModel, exerciseId)
+        ContentAddExercise(modifier = Modifier.weight(0.75f), viewModel, exerciseId, theme)
         // Bottom Bar - Navigation
-        NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate)
+        NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate, theme)
     }
 }
 
 @Composable
-fun TopBarAddExerciseScreen(modifier: Modifier) {
+fun TopBarAddExerciseScreen(modifier: Modifier, theme: AppColorScheme) {
     Box(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopStart
@@ -111,7 +111,7 @@ fun TopBarAddExerciseScreen(modifier: Modifier) {
                     .padding(start = 40.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "Add Exercise", fontSize = 40.sp, fontWeight = FontWeight(weight = 800), color = Color.White)
+                Text(text = "Add Exercise", fontSize = 40.sp, fontWeight = FontWeight(weight = 800), color = theme.textColor)
             }
 
             Box(
@@ -129,7 +129,7 @@ fun TopBarAddExerciseScreen(modifier: Modifier) {
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel, exerciseId: Int?) {
+fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel, exerciseId: Int?, theme: AppColorScheme) {
     var name by remember { mutableStateOf("Type exercise name") }
     var restTime by remember { mutableStateOf("") }
     var day by remember { mutableStateOf("") }
@@ -177,8 +177,8 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
-        Text(text = "Exercise name", color = Color.White, fontSize = 20.sp, modifier = Modifier.padding(start = 20.dp))
-        MyTextField(value = name, onValueChange = { name = it }, placeholderText = "Type exercise name")
+        Text(text = "Exercise name", color = theme.textColor, fontSize = 20.sp, modifier = Modifier.padding(start = 20.dp))
+        MyTextField(value = name, onValueChange = { name = it }, placeholderText = "Type exercise name", theme)
         Spacer(modifier = Modifier.height(12.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -188,14 +188,15 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
                 Column {
                     Text(
                         text = "Rest time",
-                        color = Color.White,
+                        color = theme.textColor,
                         fontSize = 20.sp,
                         modifier = Modifier.padding(start = 20.dp)
                     )
                     MyTextField(
                         value = restTime,
                         onValueChange = { restTime = it },
-                        placeholderText = "Rest Time in s"  // Pridat masku pro (Mon, Tue, Wed....)
+                        placeholderText = "Rest Time in s",
+                        theme
                     )
                 }
             }
@@ -203,22 +204,23 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
                 Column {
                     Text(
                         text = "Workout day",
-                        color = Color.White,
+                        color = theme.textColor,
                         fontSize = 20.sp,
                         modifier = Modifier.padding(start = 20.dp)
                     )
                     MyTextField(
                         value = day,
                         onValueChange = { day = it },
-                        placeholderText = "Workout Day"
+                        placeholderText = "Workout Day",
+                        theme
                     )
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
-        Text(text = "Sets", color = Color.White, fontSize = 20.sp, modifier = Modifier.padding(start = 20.dp))
-        WorkoutSets(fetchedSets)
+        Text(text = "Sets", color = theme.textColor, fontSize = 20.sp, modifier = Modifier.padding(start = 20.dp))
+        WorkoutSets(fetchedSets, theme)
     }
 }
 
@@ -227,13 +229,14 @@ fun MyTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholderText: String,
-    modifier: Modifier = Modifier
+    theme: AppColorScheme,
+    modifier: Modifier = Modifier,
 ) {
     TextField(
         value = value,
         onValueChange = onValueChange,
         placeholder = { Text(placeholderText, color = Color(0xFFB3B3B3)) },
-        textStyle = TextStyle(color = Color.White, fontSize = 18.sp),
+        textStyle = TextStyle(color = theme.textColor, fontSize = 18.sp),
         colors = TextFieldDefaults.colors(
             unfocusedContainerColor = Color.Transparent,
             disabledContainerColor = Color.Transparent,
@@ -246,12 +249,18 @@ fun MyTextField(
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, bottom = 8.dp, top = 4.dp)
-            .background(Color(0xFF282639), shape = RoundedCornerShape(16.dp))
             .drawBehind {
+                drawRoundRect(
+                    color = theme.textFieldBackgroundColor,
+                    size = size,
+                    topLeft = Offset.Zero,
+                    cornerRadius = CornerRadius(16.dp.toPx())
+                )
+
                 val strokeWidth = 4.dp.toPx()
                 val offset = strokeWidth / 2
                 val gradient = Brush.horizontalGradient(
-                    colors = listOf(Color(0xFF6A00F4), Color(0xFFF40072))
+                    colors = listOf(theme.borderColorGradient, theme.borderColorGradient2)
                 )
                 drawRoundRect(
                     brush = gradient,
@@ -264,33 +273,44 @@ fun MyTextField(
                     style = Stroke(strokeWidth)
                 )
             }
+
     )
 }
 
 @Composable
-fun WorkoutSets(fetchedSets: List<Set>) {
+fun WorkoutSets(fetchedSets: List<Set>, theme: AppColorScheme) {
     var setsList by remember { mutableStateOf(fetchedSets.toMutableList()) }
     var removedSets by remember { mutableStateOf(emptyList<Set>()) }
-
-    var newSet: changedSet
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .background(Color(0xFF282639), shape = RoundedCornerShape(16.dp))
-            .border(
-                width = 4.dp,
-                brush = Brush.horizontalGradient(
-                    colors = listOf(Color(0xFF6A00F4), Color(0xFFF40072))
-                ),
-                shape = RoundedCornerShape(16.dp)
-            )
+            .background(theme.textFieldBackgroundColor, shape = RoundedCornerShape(16.dp))
+            .drawBehind {
+                // Draw the gradient border
+                val strokeWidth = 4.dp.toPx()
+                val offset = strokeWidth / 2
+                val gradient = Brush.horizontalGradient(
+                    colors = listOf(theme.borderColorGradient, theme.borderColorGradient2)
+                )
+                drawRoundRect(
+                    brush = gradient,
+                    size = size.copy(
+                        width = size.width - strokeWidth,
+                        height = size.height - strokeWidth
+                    ),
+                    topLeft = Offset(offset, offset),
+                    cornerRadius = CornerRadius(16.dp.toPx()),
+                    style = Stroke(strokeWidth)
+                )
+            }
             .sizeIn(minHeight = 50.dp)
             .padding(15.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
+
     ) {
         Row(
             modifier = Modifier
@@ -314,11 +334,12 @@ fun WorkoutSets(fetchedSets: List<Set>) {
                 onRemove = {
                     removedSets = removedSets + set
                     setsList = setsList.filterIndexed { i, _ -> i != index }.toMutableList() // Mby .toMutableList() is bd
-                }
+                },
+                theme
             )
         }
 
-        AddSetButton {
+        AddSetButton(theme) {
             setsList = (setsList + SetData(
                 position = (setsList.size + 1).toString(),
                 prev = "-",
@@ -330,12 +351,15 @@ fun WorkoutSets(fetchedSets: List<Set>) {
 }
 
 @Composable
-fun AddSetButton(onClick: () -> Unit) {
+fun AddSetButton(
+    theme: AppColorScheme,
+    onClick: () -> Unit,
+) {
     Box(
         modifier = Modifier
             .clickable { onClick() }
             .fillMaxWidth()
-            .background(Color(0xFF363352), shape = RoundedCornerShape(10.dp))
+            .background(theme.customButtonColor, shape = RoundedCornerShape(10.dp))
             .height(35.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -349,7 +373,8 @@ fun SpecificSet(
     prev: String = "-",
     weightF: String = "",
     reps: String = "",
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    theme: AppColorScheme
 ) {
     var weight by remember { mutableStateOf("") }
     var rep by remember { mutableStateOf("") }
@@ -367,14 +392,14 @@ fun SpecificSet(
             .padding(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
     ) {
-        Box(modifier = Modifier.weight(0.2f), contentAlignment = Alignment.Center) { Text(text = order, color = Color.White) }
-        Box(modifier = Modifier.weight(0.2f), contentAlignment = Alignment.Center) { Text(text = prev, color = Color.White) }
+        Box(modifier = Modifier.weight(0.2f), contentAlignment = Alignment.Center) { Text(text = order, color = theme.textColor) }
+        Box(modifier = Modifier.weight(0.2f), contentAlignment = Alignment.Center) { Text(text = prev, color = theme.textColor) }
 
         Box(
             modifier = Modifier
                 .weight(0.2f)
                 .background(
-                    if (isFocusedWeight) Color(0xFF3A3856) else Color(0xFF2E2C45),
+                    if (isFocusedWeight) theme.borderColorGradient else theme.backgroundColor,
                     shape = RoundedCornerShape(4.dp)
                 )
                 .width(60.dp)
@@ -393,7 +418,7 @@ fun SpecificSet(
                 singleLine = true,
                 textStyle = LocalTextStyle.current.copy(
                     textAlign = TextAlign.Center,
-                    color = Color.White
+                    color = theme.textColor
                 ),
                 cursorBrush = SolidColor(Color.White),
                 modifier = Modifier
@@ -414,7 +439,7 @@ fun SpecificSet(
             modifier = Modifier
                 .weight(0.2f)
                 .background(
-                    if (isFocusedRep) Color(0xFF3A3856) else Color(0xFF2E2C45),
+                    if (isFocusedRep) theme.borderColorGradient else theme.backgroundColor,
                     shape = RoundedCornerShape(4.dp)
                 )
                 .width(60.dp)
@@ -432,7 +457,7 @@ fun SpecificSet(
                 singleLine = true,
                 textStyle = LocalTextStyle.current.copy(
                     textAlign = TextAlign.Center,
-                    color = Color.White
+                    color = theme.textColor
                 ),
                 cursorBrush = SolidColor(Color.White),
                 modifier = Modifier

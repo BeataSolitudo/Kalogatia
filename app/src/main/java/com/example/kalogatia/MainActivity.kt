@@ -1,12 +1,16 @@
 package com.example.kalogatia
 
-import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,12 +27,12 @@ import com.example.kalogatia.ui.screens.MainScreen
 import com.example.kalogatia.ui.screens.SettingsScreen
 import com.example.kalogatia.ui.theme.KalogatiaTheme
 import com.example.kalogatia.viewmodels.SharedViewModel
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 // ctrl + shift + r = replace all
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
-    @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -208,10 +212,24 @@ class MainActivity : ComponentActivity() {
 
                 val navController = rememberNavController()
                 val sharedViewModel: SharedViewModel = viewModel()
+                val theme by sharedViewModel.currentTheme.collectAsState()
+
+                WindowCompat.setDecorFitsSystemWindows(window, false)
+                val systemUiController = rememberSystemUiController()
+                SideEffect {
+                    systemUiController.setSystemBarsColor(
+                        color = theme.navigationColor,
+                        isNavigationBarContrastEnforced = false)
+
+                    systemUiController.setStatusBarColor(
+                        color = Color.Transparent, // Transparent top bar
+                        darkIcons = true
+                    )
+                }
 
                 NavHost(navController = navController, startDestination = "mainScreen/") {
                     composable("mainScreen/") {
-                        MainScreen(navController, { route -> handleNavigation(navController, route) })
+                        MainScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel)
                     }
 
                     composable("addWorkoutScreen/{workoutId}") { backStackEntry ->
@@ -224,7 +242,7 @@ class MainActivity : ComponentActivity() {
                         AddExerciseScreen(navController, { route -> handleNavigation(navController, route) }, exerciseId, sharedViewModel)
                     }
                     composable("settingsScreen/") {
-                        SettingsScreen(navController) { route -> handleNavigation(navController, route) }
+                        SettingsScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel)
                     }
                 }
 

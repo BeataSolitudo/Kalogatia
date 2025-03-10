@@ -2,10 +2,13 @@ package com.example.kalogatia.ui
 
 import android.annotation.SuppressLint
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AutoGraph
@@ -15,11 +18,14 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.kalogatia.ui.theme.AppColorScheme
 
 sealed class ScreenNavigation(
     val id: Int,
@@ -36,22 +42,22 @@ sealed class ScreenNavigation(
 }
 
 @Composable
-fun Navigation(navController: NavController, onNavigate: (String) -> Unit) {
+fun Navigation(navController: NavController, onNavigate: (String) -> Unit, theme: AppColorScheme) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        NavItem(item = ScreenNavigation.Home, isSelected = (currentRoute == ScreenNavigation.Home.route), onNavigate)
-        NavItem(item = ScreenNavigation.Graph, isSelected = (currentRoute == ScreenNavigation.Graph.route), onNavigate)
-        NavItem(item = ScreenNavigation.Add, isSelected = (currentRoute == ScreenNavigation.Add.route || currentRoute == "addExerciseScreen/{exerciseId}"), onNavigate)
-        NavItem(item = ScreenNavigation.Calendar, isSelected = (currentRoute == ScreenNavigation.Calendar.route), onNavigate)
-        NavItem(item = ScreenNavigation.Settings, isSelected = (currentRoute == ScreenNavigation.Settings.route), onNavigate)
+        NavItem(item = ScreenNavigation.Home, isSelected = (currentRoute == ScreenNavigation.Home.route), onNavigate, theme)
+        NavItem(item = ScreenNavigation.Graph, isSelected = (currentRoute == ScreenNavigation.Graph.route), onNavigate, theme)
+        NavItem(item = ScreenNavigation.Add, isSelected = (currentRoute == ScreenNavigation.Add.route || currentRoute == "addExerciseScreen/{exerciseId}"), onNavigate, theme)
+        NavItem(item = ScreenNavigation.Calendar, isSelected = (currentRoute == ScreenNavigation.Calendar.route), onNavigate, theme)
+        NavItem(item = ScreenNavigation.Settings, isSelected = (currentRoute == ScreenNavigation.Settings.route), onNavigate, theme)
     }
 }
 
 @Composable
-fun NavItem(item: ScreenNavigation, isSelected: Boolean, onNavigate: (String) -> Unit) {
+fun NavItem(item: ScreenNavigation, isSelected: Boolean, onNavigate: (String) -> Unit, theme: AppColorScheme) {
     val iconId = if (isSelected) item.selectedIconId else item.unSelectedIconId
     val iconAlpha = if (isSelected) 1f else 0.5f
     IconButton(onClick = { onNavigate(item.route) }) {
@@ -59,7 +65,7 @@ fun NavItem(item: ScreenNavigation, isSelected: Boolean, onNavigate: (String) ->
             imageVector = iconId,
             contentDescription = item.title,
             tint = if (isSelected) {
-                Color(0xFFFF4081).copy(alpha = iconAlpha)
+                theme.selectedNavigationItemColor.copy(alpha = iconAlpha)
             } else {
                 Color.Black.copy(alpha = iconAlpha)
             },
@@ -75,5 +81,18 @@ fun handleNavigation(navController: NavController, route: String) {
         navController.navigate("addExerciseScreen/{exerciseId}")
     } else {
         navController.navigate(route)
+    }
+}
+
+@Composable
+fun NavigationLayout(modifier: Modifier = Modifier, navController: NavController, onNavigate: (String) -> Unit, theme: AppColorScheme) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+            .background(theme.navigationColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Navigation(navController, onNavigate, theme)
     }
 }

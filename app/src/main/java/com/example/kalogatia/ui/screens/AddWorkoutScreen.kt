@@ -53,6 +53,7 @@ import com.example.kalogatia.ui.Buttons.PlayButton
 import com.example.kalogatia.ui.Divider
 import com.example.kalogatia.ui.NavigationLayout
 import com.example.kalogatia.ui.NotFound
+import com.example.kalogatia.ui.theme.AppColorScheme
 import com.example.kalogatia.viewmodels.AddWorkoutScreenViewModel
 import com.example.kalogatia.viewmodels.SharedViewModel
 
@@ -64,9 +65,9 @@ fun AddWorkoutScreen(
     workoutId: Int?,
     sharedViewModel: SharedViewModel
 ) {
-
     val viewModel: AddWorkoutScreenViewModel = viewModel(factory = AddWorkoutScreenViewModel.provideFactory(workoutId))
     val exercisesWithType by viewModel.exercisesWithType.collectAsState()
+    val theme by sharedViewModel.currentTheme.collectAsState()
 
     LaunchedEffect(navController) {
         navController.currentBackStackEntryFlow.collect { backStackEntry ->
@@ -79,13 +80,13 @@ fun AddWorkoutScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0E0E0E))
+            .background(theme.backgroundColor)
             .windowInsetsPadding(WindowInsets.systemBars),
     ) {
-        TopBarAddWorkoutScreen(modifier = Modifier.weight(0.15f), viewModel, workoutId, sharedViewModel)
-        Divider()
-        AddWorkoutScreenContent(modifier = Modifier.weight(0.75f), exercisesWithType, viewModel, navController)
-        NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate)
+        TopBarAddWorkoutScreen(modifier = Modifier.weight(0.15f), viewModel, workoutId, sharedViewModel, theme)
+        Divider(modifier = Modifier.background(theme.dividerColor))
+        AddWorkoutScreenContent(modifier = Modifier.weight(0.75f), exercisesWithType, viewModel, navController, theme)
+        NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate, theme)
     }
 }
 
@@ -93,7 +94,8 @@ fun AddWorkoutScreen(
 fun Exercise(
     exerciseWithType: ExerciseWithType,
     viewModel: AddWorkoutScreenViewModel,
-    onExerciseClick: (Int) -> Unit
+    onExerciseClick: (Int) -> Unit,
+    theme: AppColorScheme
     ) {
     LaunchedEffect(exerciseWithType.exercise.exerciseId) {
         exerciseWithType.exercise.exerciseId?.let {
@@ -114,13 +116,13 @@ fun Exercise(
             .fillMaxWidth(0.9f)
             .height(70.dp)
             .background(
-                color = Color(0xFFCA56CB),
+                color = theme.cellColorGradient,
                 shape = RoundedCornerShape(16.dp)
             )
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        Color(0xFF7359F2),
+                        theme.cellColorGradient2,
                         Color.Transparent
                     ),
                     start = Offset(0f, 0f),
@@ -144,7 +146,7 @@ fun Exercise(
                 // Exercise name
                 Text(
                     text = exerciseWithType.exerciseTypeName,
-                    color = Color.White,
+                    color = theme.textColor,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -158,11 +160,11 @@ fun Exercise(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "$maxWeight kg",
-                        color = Color.White,
+                        color = theme.textColor,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(text = "Max", color = Color.White)
+                    Text(text = "Max", color = theme.textColor)
                 }
 
             }
@@ -175,11 +177,11 @@ fun Exercise(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "$counter",
-                        color = Color.White,
+                        color = theme.textColor,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(text = "Sets", color = Color.White)
+                    Text(text = "Sets", color = theme.textColor)
                 }
 
             }
@@ -188,7 +190,7 @@ fun Exercise(
 }
 
 @Composable
-fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewModel, workoutId: Int?, sharedViewModel: SharedViewModel) {
+fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewModel, workoutId: Int?, sharedViewModel: SharedViewModel, theme: AppColorScheme) {
     val openDialog = remember { mutableStateOf(false) }
     var workoutName by remember { mutableStateOf("Type workout name") }
     val fetchedWorkoutName by viewModel.workoutName.collectAsState()
@@ -232,10 +234,10 @@ fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewMo
                 contentAlignment = Alignment.Center
             ) {
                 Column {
-                    Text(text = "Exercises", fontSize = 40.sp, fontWeight = FontWeight(weight = 800), color = Color.White)
+                    Text(text = "Exercises", fontSize = 40.sp, fontWeight = FontWeight(weight = 800), color = theme.textColor)
                     Text(
                         text = sharedViewModel.tmpWorkoutName.value?:workoutName,
-                        color = if (workoutName == "Type workout name") {animatedColor} else { Color.White },
+                        color = if (workoutName == "Type workout name") {animatedColor} else { theme.textColor },
                         modifier = Modifier.clickable {
                             openDialog.value = true
                         }
@@ -330,7 +332,8 @@ fun AddWorkoutScreenContent(
     modifier: Modifier,
     exercises: List<ExerciseWithType>,
     viewModel: AddWorkoutScreenViewModel,
-    navController: NavController
+    navController: NavController,
+    theme: AppColorScheme
 ) {
     Box(
         modifier = modifier
@@ -346,7 +349,7 @@ fun AddWorkoutScreenContent(
                     NotFound("You have no exercises!")
             } else {
                 exercises.forEach { exercise ->
-                    Exercise(exercise, viewModel, onExerciseClick = { navController.navigate("addExerciseScreen/$it") })
+                    Exercise(exercise, viewModel, onExerciseClick = { navController.navigate("addExerciseScreen/$it") }, theme)
                 }
             }
         }

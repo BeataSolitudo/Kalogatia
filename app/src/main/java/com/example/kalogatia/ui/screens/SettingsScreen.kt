@@ -1,5 +1,6 @@
 package com.example.kalogatia.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,57 +31,79 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.kalogatia.DataStoreManager
 import com.example.kalogatia.ui.Divider
 import com.example.kalogatia.ui.NavigationLayout
+import com.example.kalogatia.ui.theme.AppColorScheme
+import com.example.kalogatia.viewmodels.SharedViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
     navController: NavController,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    sharedViewModel: SharedViewModel
 ) {
+    val theme by sharedViewModel.currentTheme.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0E0E0E))
+            .background(theme.backgroundColor)
             .windowInsetsPadding(WindowInsets.systemBars),
     ) {
-        TopBarSettingsScreen(modifier = Modifier.weight(0.15f))
-        Divider()
-        SettingsScreenContent(modifier = Modifier.weight(0.75f))
-        NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate)
+        TopBarSettingsScreen(modifier = Modifier.weight(0.15f), theme)
+        Divider(modifier = Modifier.background(theme.dividerColor))
+        SettingsScreenContent(modifier = Modifier.weight(0.75f), theme)
+        NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate, theme)
     }
 }
 
 @Composable
-fun TopBarSettingsScreen(modifier: Modifier) {
+fun TopBarSettingsScreen(modifier: Modifier, theme: AppColorScheme) {
     Box(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "Settings" ,style = TextStyle(fontSize = 60.sp, fontWeight = FontWeight(800), color = Color.White))
+        Text(text = "Settings" ,style = TextStyle(fontSize = 60.sp, fontWeight = FontWeight(800), color = theme.textColor))
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun SettingsScreenContent(modifier: Modifier) {
+fun SettingsScreenContent(modifier: Modifier, theme: AppColorScheme) {
     val spacerDp = 15.dp
     val themeFontSize = 20.sp
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     var emailDialog = remember { mutableStateOf(false) }
     var aboutDialog = remember { mutableStateOf(false) }
+    var selectedColor = remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        DataStoreManager.getTheme(context).collect { theme ->
+            selectedColor.value = theme ?: ""
+        }
+    }
 
     if (emailDialog.value) {
         AlertDialogExample(dialogTitle = "Our Mail", dialogText = "j.kalivoda.st@spseiostrava.cz", icon = Icons.Rounded.Mail, onDismissRequest =  { emailDialog.value = false })
@@ -90,7 +113,9 @@ fun SettingsScreenContent(modifier: Modifier) {
     }
 
     Box(
-        modifier = modifier.fillMaxWidth().padding(30.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(30.dp),
         contentAlignment = Alignment.TopStart
     ) {
         Column(
@@ -98,7 +123,7 @@ fun SettingsScreenContent(modifier: Modifier) {
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            Text(text = "Leave your thoughts", color = Color.White, fontSize = 23.sp)
+            Text(text = "Leave your thoughts", color = theme.textColor, fontSize = 23.sp)
             myDivider(modifier = Modifier.fillMaxWidth(1f))
             Row(
                 modifier = Modifier.clickable { emailDialog.value = true },
@@ -107,21 +132,25 @@ fun SettingsScreenContent(modifier: Modifier) {
                 Icon(
                     imageVector = Icons.Rounded.Create,
                     contentDescription = "writeIcon",
-                    tint = Color.White,
-                    modifier = Modifier.size(30.dp).padding(end = 5.dp)
+                    tint = theme.iconColor,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .padding(end = 5.dp)
                 )
-                Text(text = "Write us an email", color = Color.White, fontSize = 20.sp, modifier = Modifier.weight(1f))
+                Text(text = "Write us an email", color = theme.textColor, fontSize = 20.sp, modifier = Modifier.weight(1f))
                 Icon(
                     imageVector = Icons.Rounded.ChevronRight,
                     contentDescription = "writeIcon",
-                    tint = Color.White,
-                    modifier = Modifier.size(30.dp).padding(end = 5.dp)
+                    tint = theme.textColor,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .padding(end = 5.dp)
                 )
             }
 
             Spacer(modifier = Modifier.height(spacerDp))
 
-            Text(text = "About", color = Color.White, fontSize = 23.sp)
+            Text(text = "About", color = theme.textColor, fontSize = 23.sp)
             myDivider(modifier = Modifier.fillMaxWidth(1f))
             Row(
                 modifier = Modifier.clickable { aboutDialog.value = true },
@@ -130,26 +159,32 @@ fun SettingsScreenContent(modifier: Modifier) {
                 Icon(
                     imageVector = Icons.Rounded.QuestionMark,
                     contentDescription = "writeIcon",
-                    tint = Color.White,
-                    modifier = Modifier.size(30.dp).padding(end = 5.dp)
+                    tint = theme.iconColor,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .padding(end = 5.dp)
                 )
-                Text(text = "About app", color = Color.White, fontSize = 20.sp, modifier = Modifier.weight(1f))
+                Text(text = "About app", color = theme.textColor, fontSize = 20.sp, modifier = Modifier.weight(1f))
                 Icon(
                     imageVector = Icons.Rounded.ChevronRight,
                     contentDescription = "writeIcon",
-                    tint = Color.White,
-                    modifier = Modifier.size(30.dp).padding(end = 5.dp)
+                    tint = theme.textColor,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .padding(end = 5.dp)
                 )
             }
 
             Spacer(modifier = Modifier.height(spacerDp))
 
-            Text(text = "Theme", color = Color.White, fontSize = 23.sp)
-            myDivider(modifier = Modifier.fillMaxWidth(1f).padding(bottom = 10.dp))
+            Text(text = "Theme", color = theme.textColor, fontSize = 23.sp)
+            myDivider(modifier = Modifier
+                .fillMaxWidth(1f)
+                .padding(bottom = 10.dp))
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFF1c1c1e))
+                    .background(theme.cellColor)
                     .height(70.dp)
                     .fillMaxWidth()
                     .padding(12.dp)
@@ -159,37 +194,76 @@ fun SettingsScreenContent(modifier: Modifier) {
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Dark
                     Box(
                         modifier = Modifier
                             .weight(0.3f)
                             .fillMaxHeight(1f)
-                            .clip(RoundedCornerShape(16.dp)),
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(
+                                if (selectedColor.value.equals("dark")) {
+                                    Color(0xFF85b7ff)
+                                } else {
+                                    Color.Transparent
+                                }
+                            )
+                            .clickable {
+                                coroutineScope.launch {
+                                    DataStoreManager.saveTheme(context, "dark")
+                                }
+                            },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Dark", color = Color.White, fontSize = themeFontSize)
+                        Text(text = "Dark", color = theme.textColor, fontSize = themeFontSize)
                     }
+
+                    // White
                     Box(
                         modifier = Modifier
                             .weight(0.3f)
                             .fillMaxHeight(1f)
-                            .clip(RoundedCornerShape(16.dp)),
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(
+                                if (selectedColor.value.equals("white")) {
+                                    Color(0xFF85b7ff)
+                                } else {
+                                    Color.Transparent
+                                }
+                            )
+                            .clickable {
+                                coroutineScope.launch {
+                                    DataStoreManager.saveTheme(context, "white")
+                                }
+                            },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "White", color = Color.White, fontSize = themeFontSize)
+                        Text(text = "White", color = theme.textColor, fontSize = themeFontSize)
                     }
+
+                    // Colorful
                     Box(
                         modifier = Modifier
                             .weight(0.3f)
                             .fillMaxHeight(1f)
-                            .clip(RoundedCornerShape(16.dp)).background(Color.Red),
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(
+                                if (selectedColor.value.equals("colorful")) {
+                                    Color(0xFF85b7ff)
+                                } else {
+                                    Color.Transparent
+                                }
+                            )
+                            .clickable {
+                                coroutineScope.launch {
+                                    DataStoreManager.saveTheme(context, "colorful")
+                                }
+                            },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Colorful", color = Color.White, fontSize = themeFontSize)
+                        Text(text = "Colourful", color = theme.textColor, fontSize = themeFontSize)
                     }
                 }
             }
-
-
         }
     }
 }

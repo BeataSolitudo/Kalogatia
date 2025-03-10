@@ -82,4 +82,11 @@ dependencies {
     // Navigation
     val nav_version = "2.8.2"
     implementation("androidx.navigation:navigation-compose:$nav_version")
+
+    // DataStore
+    val dataStore_version = "1.1.3" 
+    implementation("androidx.datastore:datastore-preferences:$dataStore_version")
+
+    // Add the Accompanist System UI Controller dependency
+    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.31.2-alpha")
 }

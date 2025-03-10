@@ -41,37 +41,40 @@ import com.example.kalogatia.ui.Buttons.PlayButton
 import com.example.kalogatia.ui.Divider
 import com.example.kalogatia.ui.NavigationLayout
 import com.example.kalogatia.ui.NotFound
+import com.example.kalogatia.ui.theme.AppColorScheme
 import com.example.kalogatia.viewmodels.MainScreenViewModel
+import com.example.kalogatia.viewmodels.SharedViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainScreen(
     navController: NavController,
     onNavigate: (String) -> Unit,
-    viewModel: MainScreenViewModel = viewModel(factory = MainScreenViewModel.Factory)
+    sharedViewModel: SharedViewModel,
+    viewModel: MainScreenViewModel = viewModel(factory = MainScreenViewModel.Factory),
 ) {
-    val workouts by viewModel.workouts.collectAsState()
     val todayWorkout by viewModel.todayWorkout.collectAsState()
     val workoutsWithPlanning by viewModel.workoutsWithPlanning.collectAsState()
+    val theme by sharedViewModel.currentTheme.collectAsState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0E0E0E))
+            .background(theme.backgroundColor)
             .windowInsetsPadding(WindowInsets.systemBars),
     ) {
-        TopBarMainScreen(modifier = Modifier.weight(0.15f), todayWorkout)
-        Divider()
-        MainScreenContent(modifier = Modifier.weight(0.75f), workoutsWithPlanning, viewModel, navController)
-        NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate)
+        TopBarMainScreen(modifier = Modifier.weight(0.15f), todayWorkout, theme)
+        Divider(modifier = Modifier.background(theme.dividerColor))
+        MainScreenContent(modifier = Modifier.weight(0.75f), workoutsWithPlanning, viewModel, navController, theme)
+        NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate,theme)
     }
 }
 
 @Composable
-fun TodayWorkout(workoutName: String) {
+fun TodayWorkout(workoutName: String,theme: AppColorScheme) {
     Column {
-        AutoResizedText(workoutName, style = TextStyle(fontSize = 30.sp, fontWeight = FontWeight(800), color = Color.White))
-        Text(text = "Today's workout", color = Color.White)
+        AutoResizedText(workoutName, style = TextStyle(fontSize = 30.sp, fontWeight = FontWeight(800), color = theme.textColor))
+        Text(text = "Today's workout", color = theme.textColor)
     }
 }
 
@@ -79,20 +82,21 @@ fun TodayWorkout(workoutName: String) {
 fun Workout(
     workout: Workout,
     workoutDay: String,
-    onWorkoutClick: (Int) -> Unit
+    onWorkoutClick: (Int) -> Unit,
+    theme: AppColorScheme
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth(0.9f)
             .height(70.dp)
             .background(
-                color = Color(0xFFCA56CB),
+                color = theme.cellColorGradient,
                 shape = RoundedCornerShape(16.dp)
             )
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        Color(0xFF7359F2),
+                        theme.cellColorGradient2,
                         Color.Transparent
                     ),
                     start = Offset(0f, 0f),
@@ -111,7 +115,7 @@ fun Workout(
                     .weight(0.7f),
                 contentAlignment = Alignment.TopStart
             ) {
-                AutoResizedText(workout.name, style = TextStyle(color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold))
+                AutoResizedText(workout.name, style = TextStyle(color = theme.textColor, fontSize = 20.sp, fontWeight = FontWeight.Bold))
             }
             Box(
                 modifier = Modifier
@@ -120,7 +124,7 @@ fun Workout(
             ) {
                 Text(
                     text = workoutDay,
-                    color = Color.White,
+                    color = theme.textColor,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -131,7 +135,7 @@ fun Workout(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TopBarMainScreen(modifier: Modifier, workoutName: String) {
+fun TopBarMainScreen(modifier: Modifier, workoutName: String, theme: AppColorScheme) {
     val screenHeight = LocalConfiguration.current.screenHeightDp
     val topPadding = screenHeight / 24
 
@@ -150,7 +154,7 @@ fun TopBarMainScreen(modifier: Modifier, workoutName: String) {
                     .fillMaxSize()
                     .padding(start = 40.dp, top = topPadding.dp)
             ) {
-                TodayWorkout(workoutName = workoutName)
+                TodayWorkout(workoutName = workoutName, theme)
             }
 
             // Button section
@@ -172,7 +176,8 @@ fun MainScreenContent(
     modifier: Modifier,
     workouts: List<WorkoutWithWorkoutPlanning>,
     viewModel: MainScreenViewModel,
-    navController: NavController
+    navController: NavController,
+    theme: AppColorScheme
 ) {
     // Mapping week numbers (1-7) to their respective names
     val weekDays = mapOf(
@@ -197,7 +202,8 @@ fun MainScreenContent(
                     Workout(
                         workout = workoutWithPlanning.workout,
                         workoutDay = dayName,
-                        onWorkoutClick = { navController.navigate("addWorkoutScreen/$it") }
+                        onWorkoutClick = { navController.navigate("addWorkoutScreen/$it") },
+                        theme
                     )
                 }
             }
