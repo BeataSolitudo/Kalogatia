@@ -81,9 +81,17 @@ class AddWorkoutScreenViewModel(
         }
     }
 
+    fun insertWorkout(workoutName: String, userId: Int) {
+        viewModelScope.launch {
+            workoutDao.insertWorkout(workoutName, userId)
+        }
+    }
 
-
-
+    fun updateWorkout(workoutId: Int, workoutName: String, userId: Int) {
+        viewModelScope.launch {
+            workoutDao.updateWorkout(workoutId, workoutName, userId)
+        }
+    }
 
     // ViewModel Factory (Companion Object)
     companion object {

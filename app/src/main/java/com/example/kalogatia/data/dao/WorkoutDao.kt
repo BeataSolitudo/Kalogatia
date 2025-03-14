@@ -26,4 +26,13 @@ interface WorkoutDao {
 
     @Query("SELECT name FROM workout WHERE workoutId = :workoutId")
     fun getWorkoutName(workoutId: Int): String?
+
+    @Query("INSERT INTO workout (name, userId) VALUES (:workoutName, :userId)")
+    suspend fun insertWorkout(workoutName: String, userId: Int)
+
+    @Query("UPDATE workout SET name = :workoutName, userId = :userId WHERE workoutId = :workoutId")
+    suspend fun updateWorkout(workoutId: Int ,workoutName: String, userId: Int)
+
+    @Query("SELECT workout.* FROM workout LEFT JOIN workoutplanning ON workout.workoutId = workoutplanning.workoutId WHERE workoutplanning.workoutId IS NULL")
+    fun selectIncompleteWorkouts(): Flow<List<Workout>?>
 }

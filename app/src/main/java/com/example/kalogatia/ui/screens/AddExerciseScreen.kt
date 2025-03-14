@@ -1,6 +1,5 @@
 package com.example.kalogatia.ui.screens
 
-import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -22,6 +21,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
@@ -44,8 +45,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,6 +69,7 @@ fun AddExerciseScreen(
     navController: NavController,
     onNavigate: (String) -> Unit,
     exerciseId: Int?,
+    workoutId: Int?,
     sharedViewModel: SharedViewModel
 ) {
     val viewModel: AddExerciseScreenViewModel = viewModel(factory = AddExerciseScreenViewModel.provideFactory(exerciseId))
@@ -86,17 +90,17 @@ fun AddExerciseScreen(
             .windowInsetsPadding(WindowInsets.systemBars),
     ) {
         // Top Bar - TodayWorkout, AddButton, StartButton
-        TopBarAddExerciseScreen(modifier = Modifier.weight(0.15f), theme)
+        TopBarAddExerciseScreen(modifier = Modifier.weight(0.15f), theme, viewModel)
         Divider(modifier = Modifier.background(theme.dividerColor))
         // Content - Workouts
-        ContentAddExercise(modifier = Modifier.weight(0.75f), viewModel, exerciseId, theme)
+        ContentAddExercise(modifier = Modifier.weight(0.75f), viewModel, exerciseId, theme, workoutId, navController)
         // Bottom Bar - Navigation
         NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate, theme)
     }
 }
 
 @Composable
-fun TopBarAddExerciseScreen(modifier: Modifier, theme: AppColorScheme) {
+fun TopBarAddExerciseScreen(modifier: Modifier, theme: AppColorScheme, viewModel: AddExerciseScreenViewModel) {
     Box(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopStart
@@ -121,19 +125,21 @@ fun TopBarAddExerciseScreen(modifier: Modifier, theme: AppColorScheme) {
                     .padding(end = 15.dp),
                 contentAlignment = Alignment.Center
             ) {
-                DoneButton()
+                DoneButton(onClick = { viewModel.setClicked(true) })
             }
         }
     }
 }
 
-@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel, exerciseId: Int?, theme: AppColorScheme) {
-    var name by remember { mutableStateOf("Type exercise name") }
+fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel, exerciseId: Int?, theme: AppColorScheme, workoutId: Int?, navController: NavController) {
+    var name by remember { mutableStateOf("") }
     var restTime by remember { mutableStateOf("") }
     var day by remember { mutableStateOf("") }
     val fetchedExerciseWithType by viewModel.exercisesWithType.collectAsState()
+    val clicked by viewModel.click.collectAsState()
+    var emptyName by remember { mutableStateOf(false) }
+    var emptyRestTime by remember { mutableStateOf(false) }
     val fetchedWeekDay by viewModel.weekDay.collectAsState()
     val fetchedSets by viewModel.sets.collectAsState()
     val weekDays = mapOf(
@@ -170,6 +176,32 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
         }
     }
 
+    LaunchedEffect(clicked) {
+        if (viewModel.click.value == true) {
+            viewModel.setClicked(false)
+
+            if (exerciseId == null) {
+                if (name.isEmpty()) {
+                    emptyName = true
+                } else if (restTime.isEmpty()) {
+                    emptyRestTime = true
+                } else {
+                    viewModel.insertExerciseType(name)
+                    viewModel.fetchExerciseTypeId(name) { id ->
+                        if (id != null && workoutId != null) {
+                            viewModel.insertExercise(id, restTime.toInt(), workoutId)
+                            navController.navigate("addWorkoutScreen/${workoutId}")
+                        }
+                    }
+                    emptyName = false
+                    emptyRestTime = false
+                    navController.navigate("addWorkoutScreen/${workoutId}")
+                }
+            }
+
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -178,7 +210,7 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
         horizontalAlignment = Alignment.Start
     ) {
         Text(text = "Exercise name", color = theme.textColor, fontSize = 20.sp, modifier = Modifier.padding(start = 20.dp))
-        MyTextField(value = name, onValueChange = { name = it }, placeholderText = "Type exercise name", theme)
+        MyTextField(value = name, onValueChange = { name = it }, placeholderText = "Type exercise name", theme, emptyName)
         Spacer(modifier = Modifier.height(12.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -196,7 +228,8 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
                         value = restTime,
                         onValueChange = { restTime = it },
                         placeholderText = "Rest Time in s",
-                        theme
+                        theme,
+                        emptyRestTime
                     )
                 }
             }
@@ -212,7 +245,8 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
                         value = day,
                         onValueChange = { day = it },
                         placeholderText = "Workout Day",
-                        theme
+                        theme,
+                        false
                     )
                 }
             }
@@ -220,7 +254,7 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
 
         Spacer(modifier = Modifier.height(12.dp))
         Text(text = "Sets", color = theme.textColor, fontSize = 20.sp, modifier = Modifier.padding(start = 20.dp))
-        WorkoutSets(fetchedSets, theme)
+        WorkoutSets(fetchedSets, theme, viewModel)
     }
 }
 
@@ -230,11 +264,22 @@ fun MyTextField(
     onValueChange: (String) -> Unit,
     placeholderText: String,
     theme: AppColorScheme,
+    isError: Boolean? = false,
     modifier: Modifier = Modifier,
 ) {
+    val focusManager = LocalFocusManager.current
+
     TextField(
         value = value,
         onValueChange = onValueChange,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            imeAction = ImeAction.Done
+        ),
+        keyboardActions = KeyboardActions(
+            onDone = {
+                focusManager.clearFocus()
+            }
+        ),
         placeholder = { Text(placeholderText, color = Color(0xFFB3B3B3)) },
         textStyle = TextStyle(color = theme.textColor, fontSize = 18.sp),
         colors = TextFieldDefaults.colors(
@@ -260,7 +305,11 @@ fun MyTextField(
                 val strokeWidth = 4.dp.toPx()
                 val offset = strokeWidth / 2
                 val gradient = Brush.horizontalGradient(
-                    colors = listOf(theme.borderColorGradient, theme.borderColorGradient2)
+                    colors = if (isError == true) {
+                        listOf(Color(0xFFEF0107), Color(0xFFDE3163))
+                    } else {
+                        listOf(theme.borderColorGradient, theme.borderColorGradient2)
+                    }// listOf(theme.borderColorGradient, theme.borderColorGradient2)
                 )
                 drawRoundRect(
                     brush = gradient,
@@ -278,9 +327,65 @@ fun MyTextField(
 }
 
 @Composable
-fun WorkoutSets(fetchedSets: List<Set>, theme: AppColorScheme) {
-    var setsList by remember { mutableStateOf(fetchedSets.toMutableList()) }
-    var removedSets by remember { mutableStateOf(emptyList<Set>()) }
+fun WorkoutSets(fetchedSets: List<Set>?, theme: AppColorScheme, viewModel: AddExerciseScreenViewModel) {
+    val clicked by viewModel.click.collectAsState()
+    var tmpSetList by remember { mutableStateOf(mutableListOf<SetData>()) }
+
+    // ✅ Initialize tmpSetList when fetchedSets is loaded
+    LaunchedEffect(fetchedSets) {
+        if (!fetchedSets.isNullOrEmpty()) {
+            tmpSetList = fetchedSets.mapIndexed { index, set ->
+                SetData(
+                    id = set.setId,
+                    position = index + 1,
+                    prev = "-",
+                    weight = "${set.weight} Kg",
+                    reps = set.repetition.toString()
+                )
+            }.toMutableList()
+        }
+    }
+
+    // ✅ Compare lists when "clicked" changes
+    LaunchedEffect(clicked) {
+        if (clicked) {
+            val fetchedSetList = fetchedSets?.map { set ->
+                set.setId to SetData(
+                    id = set.setId,
+                    position = 0, // Position is ignored for comparison
+                    prev = "-",
+                    weight = "${set.weight} Kg",
+                    reps = set.repetition.toString()
+                )
+            }?.toMap() ?: emptyMap() // Convert to map for quick lookup
+
+            val tmpSetMap = tmpSetList.associateBy { it.id } // Create map for quick lookup
+
+            // 1️⃣ Check for Removed Sets (Exists in fetchedSets but not in tmpSetList)
+            for ((setId, setData) in fetchedSetList) {
+                if (setId != null && !tmpSetMap.containsKey(setId)) {
+                    println("Removed Set ID: $setId")
+                }
+            }
+
+            // 2️⃣ Check for Added Sets (No setId in tmpSetList)
+            for (set in tmpSetList) {
+                if (set.id == null) {
+                    println("Added Set: $set")
+                }
+            }
+
+            // 3️⃣ Check for Modified Sets (Exists in both but has changes)
+            for ((setId, setData) in fetchedSetList) {
+                if (setId != null && tmpSetMap.containsKey(setId)) {
+                    val tmpSet = tmpSetMap[setId]
+                    if (tmpSet != null && (setData.weight != tmpSet.weight || setData.reps != tmpSet.reps)) {
+                        println("Modified Set: $tmpSet")
+                    }
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -288,7 +393,6 @@ fun WorkoutSets(fetchedSets: List<Set>, theme: AppColorScheme) {
             .padding(16.dp)
             .background(theme.textFieldBackgroundColor, shape = RoundedCornerShape(16.dp))
             .drawBehind {
-                // Draw the gradient border
                 val strokeWidth = 4.dp.toPx()
                 val offset = strokeWidth / 2
                 val gradient = Brush.horizontalGradient(
@@ -310,7 +414,6 @@ fun WorkoutSets(fetchedSets: List<Set>, theme: AppColorScheme) {
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
-
     ) {
         Row(
             modifier = Modifier
@@ -325,27 +428,31 @@ fun WorkoutSets(fetchedSets: List<Set>, theme: AppColorScheme) {
             Box(modifier = Modifier.weight(0.2f), contentAlignment = Alignment.Center) { Text(text = "RM", color = Color(0xFFB3B3B3)) }
         }
 
-        fetchedSets.forEachIndexed { index, set ->
+        // ✅ Render tmpSetList (Fetched + New Sets)
+        tmpSetList.forEachIndexed { index, setData ->
             SpecificSet(
                 order = (index + 1).toString(),
-                prev = "-",
-                weightF = set.weight.toString(),
-                reps = set.repetition.toString(),
+                prev = setData.prev,
+                weightF = setData.weight,
+                reps = setData.reps,
                 onRemove = {
-                    removedSets = removedSets + set
-                    setsList = setsList.filterIndexed { i, _ -> i != index }.toMutableList() // Mby .toMutableList() is bd
+                    tmpSetList = tmpSetList.filterIndexed { i, _ -> i != index }
+                        .mapIndexed { newIndex, set -> set.copy(position = newIndex + 1) }
+                        .toMutableList()
                 },
                 theme
             )
         }
 
+        // ✅ Add new set correctly
         AddSetButton(theme) {
-            setsList = (setsList + SetData(
-                position = (setsList.size + 1).toString(),
+            tmpSetList = (tmpSetList + SetData(
+                id = null,
+                position = (tmpSetList.size + 1),
                 prev = "-",
-                weight = "0 kg",
+                weight = "0 Kg",
                 reps = "0"
-            )) as MutableList<Set>
+            )).toMutableList()
         }
     }
 }
@@ -479,7 +586,8 @@ fun SpecificSet(
 }
 
 data class SetData(
-    val position: String,
+    val id: Int?,
+    val position: Int,
     val prev: String,
     val weight: String,
     val reps: String

@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.kalogatia.DataStoreManager
 import com.example.kalogatia.data.entities.Set
+import com.example.kalogatia.data.entities.Workout
 import com.example.kalogatia.ui.theme.AppColorScheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -91,6 +92,43 @@ class SharedViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+    private val _fetchedWorkout = MutableStateFlow<Workout?>(null)
+    val fetchedWorkout: StateFlow<Workout?> = _fetchedWorkout
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     private var _userId = MutableLiveData<Int>(null)
     val userId: LiveData<Int> = _userId
 
@@ -155,4 +193,3 @@ class SharedViewModel(application: Application): AndroidViewModel(application) {
         _set.value = currentList
     }
 }
-

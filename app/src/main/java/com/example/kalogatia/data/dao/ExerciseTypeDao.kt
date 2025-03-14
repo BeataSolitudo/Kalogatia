@@ -3,7 +3,6 @@ package com.example.kalogatia.data.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.Upsert
 import com.example.kalogatia.data.entities.ExerciseType
 import kotlinx.coroutines.flow.Flow
@@ -22,4 +21,7 @@ interface ExerciseTypeDao {
     /*Musí být suspend?*/
     @Query("SELECT exerciseTypeId FROM ExerciseType WHERE name LIKE :exerciseTypeName LIMIT 1")
     suspend fun selectExerciseTypeByName(exerciseTypeName: String): Int?
+
+    @Query("INSERT INTO exerciseType(name) VALUES (:name)")
+    suspend fun insertExerciseType(name: String)
 }

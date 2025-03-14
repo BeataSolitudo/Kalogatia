@@ -33,10 +33,14 @@ class MainScreenViewModel(
     private val _workoutsWithPlanning = MutableStateFlow<List<WorkoutWithWorkoutPlanning>>(emptyList())
     val workoutsWithPlanning: StateFlow<List<WorkoutWithWorkoutPlanning>> = _workoutsWithPlanning
 
+    private val _incompleteWorkouts = MutableStateFlow<List<Workout>>(emptyList())
+    val incompleteWorkouts: StateFlow<List<Workout>> = _incompleteWorkouts
+
     init {
         fetchWorkouts()
         fetchTodayWorkout()
         fetchWorkoutsAndWorkoutPlanning()
+        fetchIncompleteWorkouts()
     }
 
     private fun fetchWorkouts() {
@@ -53,13 +57,15 @@ class MainScreenViewModel(
             _todayWorkout.value = workoutDao.selectWorkoutByDay(dayOfWeek) ?: "Today is rest day!"
         }
     }
-/*
-    fun getWorkoutDay(workoutId: Int): Int {
+
+    private fun fetchIncompleteWorkouts() {
         viewModelScope.launch {
-            val workoutDay = workoutPlanningDao.getWorkoutDay(workoutId)
+            workoutDao.selectIncompleteWorkouts().collect { myWorkoutData ->
+                _incompleteWorkouts.value = myWorkoutData ?: emptyList()
+            }
         }
     }
-*/
+
     fun fetchWorkoutsAndWorkoutPlanning() {
         viewModelScope.launch {
             val workoutsPlanningData = workoutWithWorkoutPlanningDao.getAllWorkoutsWithWorkoutPlanning().firstOrNull()

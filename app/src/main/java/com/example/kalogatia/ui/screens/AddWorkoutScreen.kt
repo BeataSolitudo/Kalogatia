@@ -2,11 +2,6 @@ package com.example.kalogatia.ui.screens
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -83,10 +78,10 @@ fun AddWorkoutScreen(
             .background(theme.backgroundColor)
             .windowInsetsPadding(WindowInsets.systemBars),
     ) {
-        TopBarAddWorkoutScreen(modifier = Modifier.weight(0.15f), viewModel, workoutId, sharedViewModel, theme)
+        TopBarAddWorkoutScreen(modifier = Modifier.weight(0.15f), viewModel, workoutId, sharedViewModel, theme, navController)
         Divider(modifier = Modifier.background(theme.dividerColor))
-        AddWorkoutScreenContent(modifier = Modifier.weight(0.75f), exercisesWithType, viewModel, navController, theme)
-        NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate, theme)
+        AddWorkoutScreenContent(modifier = Modifier.weight(0.75f), exercisesWithType, viewModel, navController, theme, workoutId)
+        NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate, theme, workoutId)
     }
 }
 
@@ -190,17 +185,11 @@ fun Exercise(
 }
 
 @Composable
-fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewModel, workoutId: Int?, sharedViewModel: SharedViewModel, theme: AppColorScheme) {
+fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewModel, workoutId: Int?, sharedViewModel: SharedViewModel, theme: AppColorScheme, navController: NavController) {
     val openDialog = remember { mutableStateOf(false) }
     var workoutName by remember { mutableStateOf("Type workout name") }
     val fetchedWorkoutName by viewModel.workoutName.collectAsState()
-    val infiniteTransition = rememberInfiniteTransition(label = "infinite transition")
-    val animatedColor by infiniteTransition.animateColor(
-        initialValue = Color(0xFFFFA500),
-        targetValue = Color(0xFF9C27B0),
-        animationSpec = infiniteRepeatable(tween(1000), RepeatMode.Reverse),
-        label = "color"
-    )
+
     sharedViewModel.saveWorkoutName(workoutName)
 
     // Fetch workout name only if workoutId is not null
@@ -209,6 +198,7 @@ fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewMo
             viewModel.fetchWorkoutName(workoutId)
         } else {
             workoutName = "Type workout name"
+            openDialog.value = true
         }
     }
 
@@ -218,6 +208,7 @@ fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewMo
             workoutName = fetchedWorkoutName
         }
     }
+
 
     Box(
         modifier = modifier
@@ -237,7 +228,7 @@ fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewMo
                     Text(text = "Exercises", fontSize = 40.sp, fontWeight = FontWeight(weight = 800), color = theme.textColor)
                     Text(
                         text = sharedViewModel.tmpWorkoutName.value?:workoutName,
-                        color = if (workoutName == "Type workout name") {animatedColor} else { theme.textColor },
+                        color = theme.textColor,
                         modifier = Modifier.clickable {
                             openDialog.value = true
                         }
@@ -258,11 +249,18 @@ fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewMo
 
     if (openDialog.value) {
         DialogWithInput(
-            onDismissRequest = { openDialog.value = false },
+            onDismissRequest = {
+                openDialog.value = false
+                if(workoutId == null) navController.navigate("mainScreen/") },
             onConfirmation = { newWorkoutName ->
-                // workoutName = newWorkoutName
                 sharedViewModel.saveTmpWorkoutName(newWorkoutName)
                 openDialog.value = false
+                if (workoutId != null) {
+                    viewModel.updateWorkout(workoutId, newWorkoutName, 1)
+                } else {
+                    viewModel.insertWorkout(newWorkoutName, 1)
+                    println("Insert Successful")
+                }
             }
         )
     }
@@ -271,9 +269,10 @@ fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewMo
 @Composable
 fun DialogWithInput(
     onDismissRequest: () -> Unit,
-    onConfirmation: (String) -> Unit,
+    onConfirmation: (String) -> Unit
 ) {
     var textFieldValue by remember { mutableStateOf("") }
+    val isInputValid = textFieldValue.isNotBlank()
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
@@ -306,18 +305,17 @@ fun DialogWithInput(
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-                // Buttons "Dismiss" & "Enter"
+
                 Row(
                     horizontalArrangement = Arrangement.End,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    TextButton(
-                        onClick = { onDismissRequest() },
-                    ) {
+                    TextButton(onClick = { onDismissRequest() }) {
                         Text("Dismiss")
                     }
                     TextButton(
                         onClick = { onConfirmation(textFieldValue) },
+                        enabled = isInputValid // Disable button if input is invalid
                     ) {
                         Text("Enter")
                     }
@@ -327,13 +325,15 @@ fun DialogWithInput(
     }
 }
 
+
 @Composable
 fun AddWorkoutScreenContent(
     modifier: Modifier,
     exercises: List<ExerciseWithType>,
     viewModel: AddWorkoutScreenViewModel,
     navController: NavController,
-    theme: AppColorScheme
+    theme: AppColorScheme,
+    workoutId: Int?
 ) {
     Box(
         modifier = modifier
@@ -349,7 +349,19 @@ fun AddWorkoutScreenContent(
                     NotFound("You have no exercises!")
             } else {
                 exercises.forEach { exercise ->
-                    Exercise(exercise, viewModel, onExerciseClick = { navController.navigate("addExerciseScreen/$it") }, theme)
+                    Exercise(
+                        exercise,
+                        viewModel,
+                        onExerciseClick = { exerciseId ->
+                            if (workoutId != null) {
+                                navController.navigate("addExerciseScreen/$exerciseId/$workoutId")
+                            } else {
+                                println("workoutId is null! Cannot navigate.")
+                            }
+                        },
+                        theme
+                    )
+
                 }
             }
         }

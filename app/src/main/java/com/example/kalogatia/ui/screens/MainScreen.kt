@@ -55,6 +55,7 @@ fun MainScreen(
 ) {
     val todayWorkout by viewModel.todayWorkout.collectAsState()
     val workoutsWithPlanning by viewModel.workoutsWithPlanning.collectAsState()
+    val incompleteWorkouts by viewModel.incompleteWorkouts.collectAsState()
     val theme by sharedViewModel.currentTheme.collectAsState()
 
     Column(
@@ -65,7 +66,7 @@ fun MainScreen(
     ) {
         TopBarMainScreen(modifier = Modifier.weight(0.15f), todayWorkout, theme)
         Divider(modifier = Modifier.background(theme.dividerColor))
-        MainScreenContent(modifier = Modifier.weight(0.75f), workoutsWithPlanning, viewModel, navController, theme)
+        MainScreenContent(modifier = Modifier.weight(0.75f), workoutsWithPlanning, incompleteWorkouts, viewModel, navController, theme)
         NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate,theme)
     }
 }
@@ -175,6 +176,7 @@ fun TopBarMainScreen(modifier: Modifier, workoutName: String, theme: AppColorSch
 fun MainScreenContent(
     modifier: Modifier,
     workouts: List<WorkoutWithWorkoutPlanning>,
+    incompleteWorkouts: List<Workout>,
     viewModel: MainScreenViewModel,
     navController: NavController,
     theme: AppColorScheme
@@ -184,6 +186,8 @@ fun MainScreenContent(
         1 to "Mon", 2 to "Tue", 3 to "Wed", 4 to "Thu",
         5 to "Fri", 6 to "Sat", 7 to "Sun"
     )
+
+    // Sorting workouts by the weekday
     val sortedWorkouts = workouts.sortedBy { it.workoutPlanning.weekDay }
 
     Box(
@@ -194,7 +198,8 @@ fun MainScreenContent(
             modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            if (sortedWorkouts.isEmpty()) {
+            // Display sorted workouts
+            if (sortedWorkouts.isEmpty() && incompleteWorkouts.isEmpty()) {
                 NotFound("You have no workouts!")
             } else {
                 sortedWorkouts.forEach { workoutWithPlanning ->
@@ -202,7 +207,19 @@ fun MainScreenContent(
                     Workout(
                         workout = workoutWithPlanning.workout,
                         workoutDay = dayName,
-                        onWorkoutClick = { navController.navigate("addWorkoutScreen/$it") },
+                        onWorkoutClick = { navController.navigate("addWorkoutScreen/${workoutWithPlanning.workout.workoutId}") },
+                        theme
+                    )
+                }
+            }
+
+            // Display incomplete workouts after sorted ones
+            if (!incompleteWorkouts.isEmpty()) {
+                incompleteWorkouts.forEach { workout ->
+                    Workout(
+                        workout = workout,
+                        workoutDay = "",
+                        onWorkoutClick = { navController.navigate("addWorkoutScreen/${workout.workoutId}") },
                         theme
                     )
                 }

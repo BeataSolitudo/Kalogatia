@@ -16,13 +16,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun DoneButton(/*onClick: () -> Unit*/) {
+fun DoneButton(onClick: (Boolean) -> Unit) {
     Box(
         modifier = Modifier
             .size(55.dp)
             .clip(CircleShape)
             .background(Color(0xFF0FFF50))
-            .clickable { /*onClick()*/ },
+            .clickable { onClick(true) },
         contentAlignment = Alignment.Center
     ) {
         Icon(

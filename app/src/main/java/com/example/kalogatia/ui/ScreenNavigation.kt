@@ -12,7 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AutoGraph
-import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.ContentPaste
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
@@ -35,14 +35,14 @@ sealed class ScreenNavigation(
     val route: String
 ) {
     object Home : ScreenNavigation(id = 0, title ="Home", selectedIconId = Icons.Rounded.Home, unSelectedIconId = Icons.Rounded.Home, route = "mainScreen/")
-    object Calendar : ScreenNavigation(id = 1, title ="Calendar", selectedIconId = Icons.Rounded.CalendarMonth, unSelectedIconId = Icons.Rounded.CalendarMonth, route = "")
+    object Calendar : ScreenNavigation(id = 1, title ="Notebook", selectedIconId = Icons.Rounded.ContentPaste, unSelectedIconId = Icons.Rounded.ContentPaste, route = "notebook/")
     object Add : ScreenNavigation(id = 1, title ="Add", selectedIconId = Icons.Rounded.Add, unSelectedIconId = Icons.Rounded.Add, route = "addWorkoutScreen/{workoutId}")
     object Graph : ScreenNavigation(id = 1, title ="Graph", selectedIconId = Icons.Rounded.AutoGraph, unSelectedIconId = Icons.Rounded.AutoGraph, route = "")
     object Settings : ScreenNavigation(id = 1, title ="Settings", selectedIconId = Icons.Rounded.Settings, unSelectedIconId = Icons.Rounded.Settings, route = "settingsScreen/")
 }
 
 @Composable
-fun Navigation(navController: NavController, onNavigate: (String) -> Unit, theme: AppColorScheme) {
+fun Navigation(navController: NavController, onNavigate: (String) -> Unit, theme: AppColorScheme, workoutId: Int? = null) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -50,7 +50,12 @@ fun Navigation(navController: NavController, onNavigate: (String) -> Unit, theme
     ) {
         NavItem(item = ScreenNavigation.Home, isSelected = (currentRoute == ScreenNavigation.Home.route), onNavigate, theme)
         NavItem(item = ScreenNavigation.Graph, isSelected = (currentRoute == ScreenNavigation.Graph.route), onNavigate, theme)
-        NavItem(item = ScreenNavigation.Add, isSelected = (currentRoute == ScreenNavigation.Add.route || currentRoute == "addExerciseScreen/{exerciseId}"), onNavigate, theme)
+        NavItem(
+            ScreenNavigation.Add,
+            isSelected = (currentRoute?.startsWith("addWorkoutScreen") == true || currentRoute?.startsWith("addExerciseScreen") == true),
+            { handleNavigation(navController, "addWorkoutScreen/{workoutId}", workoutId) }, // ✅ Pass workoutId dynamically
+            theme
+        )
         NavItem(item = ScreenNavigation.Calendar, isSelected = (currentRoute == ScreenNavigation.Calendar.route), onNavigate, theme)
         NavItem(item = ScreenNavigation.Settings, isSelected = (currentRoute == ScreenNavigation.Settings.route), onNavigate, theme)
     }
@@ -74,18 +79,18 @@ fun NavItem(item: ScreenNavigation, isSelected: Boolean, onNavigate: (String) ->
     }
 }
 
-fun handleNavigation(navController: NavController, route: String) {
+fun handleNavigation(navController: NavController, route: String, workoutId: Int? = null) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
     if (currentRoute == "addWorkoutScreen/{workoutId}" && route == "addWorkoutScreen/{workoutId}") {
-        navController.navigate("addExerciseScreen/{exerciseId}")
+        navController.navigate("addExerciseScreen/{exerciseId}/$workoutId")
     } else {
         navController.navigate(route)
     }
 }
 
 @Composable
-fun NavigationLayout(modifier: Modifier = Modifier, navController: NavController, onNavigate: (String) -> Unit, theme: AppColorScheme) {
+fun NavigationLayout(modifier: Modifier = Modifier, navController: NavController, onNavigate: (String) -> Unit, theme: AppColorScheme, workoutId: Int? = null) {
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -93,6 +98,6 @@ fun NavigationLayout(modifier: Modifier = Modifier, navController: NavController
             .background(theme.navigationColor),
         contentAlignment = Alignment.Center
     ) {
-        Navigation(navController, onNavigate, theme)
+        Navigation(navController, onNavigate, theme, workoutId)
     }
 }

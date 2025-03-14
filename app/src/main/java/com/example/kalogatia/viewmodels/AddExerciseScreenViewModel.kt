@@ -1,11 +1,14 @@
 package com.example.kalogatia.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.example.kalogatia.data.dao.ExerciseDao
+import com.example.kalogatia.data.dao.ExerciseTypeDao
 import com.example.kalogatia.data.dao.ExerciseTypeWithExerciseDao
 import com.example.kalogatia.data.dao.ExerciseWithType
 import com.example.kalogatia.data.dao.SetDao
@@ -29,6 +32,8 @@ class AddExerciseScreenViewModel(
     private val exerciseTypeWithExerciseDao: ExerciseTypeWithExerciseDao,
     private val workoutPlanningDao: WorkoutPlanningDao,
     private val setDao: SetDao,
+    private val exerciseTypeDao: ExerciseTypeDao,
+    private val exerciseDao: ExerciseDao,
 ): ViewModel() {
     init {
         if (exerciseId != null) {fetchExerciseAccessories(exerciseId)}
@@ -43,8 +48,8 @@ class AddExerciseScreenViewModel(
     private var _exerciseName = MutableLiveData<String>(null)
     val exerciseName: LiveData<String> = _exerciseName
 
-    private var _sets = MutableStateFlow<List<Set>>(emptyList())
-    val sets: StateFlow<List<Set>> = _sets
+    private var _sets = MutableStateFlow<List<Set>?>(emptyList())
+    val sets: StateFlow<List<Set>?> = _sets
 
     fun fetchExerciseAccessories(exerciseId: Int) {
         viewModelScope.launch {
@@ -71,12 +76,36 @@ class AddExerciseScreenViewModel(
         }
     }
 
-    fun addSet() {
+    private var _click = MutableStateFlow<Boolean>(false)
+    val click: StateFlow<Boolean> = _click
 
+    fun setClicked(value: Boolean) {
+        _click.value = value
     }
 
-    fun removeSet() {
+    fun insertExerciseType(name: String) {
+        viewModelScope.launch {
+            exerciseTypeDao.insertExerciseType(name)
+        }
+    }
 
+    private var _exerciseTypeId = MutableStateFlow<Int?>(null)
+    val exerciseTypeId: StateFlow<Int?> = _exerciseTypeId
+
+    fun fetchExerciseTypeId(name: String, onFetched: (Int?) -> Unit) {
+        viewModelScope.launch {
+            val id = exerciseTypeDao.selectExerciseTypeByName(name)
+            _exerciseTypeId.value = id
+            Log.d("ExerciseTypeViewModel", "Fetched ID: $id")
+            onFetched(id)
+        }
+    }
+
+
+    fun insertExercise(exerciseTypeId: Int, restTime: Int, workoutId: Int) {
+        viewModelScope.launch {
+            exerciseDao.insertExercise(exerciseTypeId, restTime, workoutId)
+        }
     }
 
 
@@ -92,6 +121,8 @@ class AddExerciseScreenViewModel(
                         dbInstance.exerciseTypeWithExerciseDao,
                         dbInstance.workoutPlanningDao,
                         dbInstance.setDao,
+                        dbInstance.exerciseTypeDao,
+                        dbInstance.exerciseDao,
                     ) as T
                 }
             }

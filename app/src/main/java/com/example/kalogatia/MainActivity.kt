@@ -1,5 +1,6 @@
 package com.example.kalogatia
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,6 +25,7 @@ import com.example.kalogatia.ui.handleNavigation
 import com.example.kalogatia.ui.screens.AddExerciseScreen
 import com.example.kalogatia.ui.screens.AddWorkoutScreen
 import com.example.kalogatia.ui.screens.MainScreen
+import com.example.kalogatia.ui.screens.NoteBookScreen
 import com.example.kalogatia.ui.screens.SettingsScreen
 import com.example.kalogatia.ui.theme.KalogatiaTheme
 import com.example.kalogatia.viewmodels.SharedViewModel
@@ -32,6 +34,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 // ctrl + shift + r = replace all
 
 class MainActivity : ComponentActivity() {
+    @SuppressLint("CoroutineCreationDuringComposition")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -58,9 +61,9 @@ class MainActivity : ComponentActivity() {
                 )
 
                 val workouts = listOf(
-                    Workout("Back + Biceps + Forearms", System.currentTimeMillis(), 1),
-                    Workout("Chest + Shoulders + Abs", System.currentTimeMillis(), 1),
-                    Workout("Legs + Triceps", System.currentTimeMillis(), 1)
+                    Workout("Back + Biceps + Forearms", userId = 1),
+                    Workout("Chest + Shoulders + Abs", userId = 1),
+                    Workout("Legs + Triceps", userId = 1)
                 )
 
                 val workoutPlanning = listOf(
@@ -85,130 +88,114 @@ class MainActivity : ComponentActivity() {
                     ExerciseType("Preacher dumbell bar"),
                     ExerciseType("Wrist curl")
                 )
-/*
-                lifecycleScope.launch {
-                    users.forEach { userDao.upsertUser(it) }
-                    workouts.forEach { workoutDao.upsertWorkout(it) }
-                    workoutPlanning.forEach { workoutPlanningDao.upsertWorkoutPlanning(it) }
-                    exerciseTypes.forEach { exerciseTypeDao.upsertExerciseType(it) }
+//
+//                lifecycleScope.launch {
+//                    users.forEach { userDao.upsertUser(it) }
+//                    workouts.forEach { workoutDao.insertWorkout(it.name, it.userId)}
+//                    //workouts.forEach { workoutDao.upsertWorkout(it) }
+//                    workoutPlanning.forEach { workoutPlanningDao.upsertWorkoutPlanning(it) }
+//                    exerciseTypes.forEach { exerciseTypeDao.upsertExerciseType(it) }
+//
+//                    val exercises = listOf(
+//                        Exercise(
+//                            exerciseTypeId = exerciseTypeDao.selectExerciseTypeByName("Pull-up")?:throw IllegalArgumentException("ExerciseType 'Pull-up' not found"),
+//                            restTime = 90,
+//                            workoutId = workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:throw IllegalArgumentException("Didn't find Back + Biceps + Forearms")
+//                        ),
+//                        Exercise(
+//                            exerciseTypeId = exerciseTypeDao.selectExerciseTypeByName("Deadlift")?:0,
+//                            90,
+//                            workoutId = workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
+//                        ),
+//                        Exercise(
+//                            exerciseTypeId = exerciseTypeDao.selectExerciseTypeByName("Chest-supported row")?:0,
+//                            restTime = 90,
+//                            workoutId = workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
+//                        ),
+//                        Exercise(
+//                            exerciseTypeId = exerciseTypeDao.selectExerciseTypeByName("Lat pull-down")?:0,
+//                            restTime = 90,
+//                            workoutId = workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
+//                        ),
+//                        Exercise(
+//                            exerciseTypeId = exerciseTypeDao.selectExerciseTypeByName("Deadlift")?:0,
+//                            restTime = 90,
+//                            workoutId = workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
+//                        ),
+//                        Exercise(
+//                            exerciseTypeId = exerciseTypeDao.selectExerciseTypeByName("Omni-grip supported row")?:0,
+//                            restTime = 90,
+//                            workoutId = workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
+//                        ),
+//                        Exercise(
+//                            exerciseTypeId = exerciseTypeDao.selectExerciseTypeByName("Cable row")?:0,
+//                            restTime = 90,
+//                            workoutId = workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
+//                        ),
+//                        Exercise(
+//                            exerciseTypeId = exerciseTypeDao.selectExerciseTypeByName("Incline")?:0,
+//                            restTime = 90,
+//                            workoutId = workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
+//                        ),
+//                        Exercise(
+//                            exerciseTypeId = exerciseTypeDao.selectExerciseTypeByName("Preacher barbell curl")?:0,
+//                            restTime = 90,
+//                            workoutId = workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
+//                        ),
+//                        Exercise(
+//                            exerciseTypeId = exerciseTypeDao.selectExerciseTypeByName("Barbell curl")?:0,
+//                            restTime = 90,
+//                            workoutId = workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
+//                        ),
+//                        Exercise(
+//                            exerciseTypeId = exerciseTypeDao.selectExerciseTypeByName("Preacher dumbell bar")?:0,
+//                            restTime = 90,
+//                            workoutId = workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
+//                        ),
+//                        Exercise(
+//                            exerciseTypeId = exerciseTypeDao.selectExerciseTypeByName("Wrist curl")?:0,
+//                            restTime = 90,
+//                            workoutId = workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
+//                        )
+//                    )
+//
+//                    exercises.forEach { exerciseDao.upsertExercise(it) }
+//
+//                    val sets = listOf(
+//                        Set(
+//                            setNumber = setDao.autoNumbering(exerciseDao.getExerciseIdByName("Pull-up")?:0),
+//                            weight = 85.0,
+//                            repetition = 10,
+//                            exerciseId = exerciseDao.getExerciseIdByName("Pull-up")?:0
+//                        ),
+//                        Set(
+//                            setNumber = setDao.autoNumbering(exerciseDao.getExerciseIdByName("Pull-up")?:0),
+//                            weight = 85.0,
+//                            repetition = 9,
+//                            exerciseId = exerciseDao.getExerciseIdByName("Pull-up")?:0
+//                        ),
+//                        Set(
+//                            setNumber = setDao.autoNumbering(exerciseDao.getExerciseIdByName("Pull-up")?:0),
+//                            weight = 85.0,
+//                            repetition = 8,
+//                            exerciseId = exerciseDao.getExerciseIdByName("Pull-up")?:0
+//                        ),
+//                        Set(
+//                            setNumber = setDao.autoNumbering(exerciseDao.getExerciseIdByName("Pull-up")?:0),
+//                            weight = 85.0,
+//                            repetition = 7,
+//                            exerciseId = exerciseDao.getExerciseIdByName("Pull-up")?:0
+//                        ),
+//                        Set(
+//                            setNumber = setDao.autoNumbering(exerciseDao.getExerciseIdByName("Pull-up")?:0),
+//                            weight = 85.0,
+//                            repetition = 6,
+//                            exerciseId = exerciseDao.getExerciseIdByName("Pull-up")?:0
+//                        ),
+//                    )
+//                    sets.forEach { setDao.upsertSet(it) }
+//                }
 
-                    val exercises = listOf(
-                        Exercise(
-                            exerciseTypeDao.selectExerciseTypeByName("Pull-up")?:throw IllegalArgumentException("ExerciseType 'Pull-up' not found"),
-                            90.0,
-                            System.currentTimeMillis(),
-                            workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:throw IllegalArgumentException("Didn't find Back + Biceps + Forearms")
-                        ),
-                        Exercise(
-                            exerciseTypeDao.selectExerciseTypeByName("Deadlift")?:0,
-                            90.0,
-                            System.currentTimeMillis(),
-                            workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
-                        ),
-                        Exercise(
-                            exerciseTypeDao.selectExerciseTypeByName("Chest-supported row")?:0,
-                            90.0,
-                            System.currentTimeMillis(),
-                            workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
-                        ),
-                        Exercise(
-                            exerciseTypeDao.selectExerciseTypeByName("Lat pull-down")?:0,
-                            90.0,
-                            System.currentTimeMillis(),
-                            workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
-                        ),
-                        Exercise(
-                            exerciseTypeDao.selectExerciseTypeByName("Deadlift")?:0,
-                            90.0,
-                            System.currentTimeMillis(),
-                            workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
-                        ),
-                        Exercise(
-                            exerciseTypeDao.selectExerciseTypeByName("Omni-grip supported row")?:0,
-                            90.0,
-                            System.currentTimeMillis(),
-                            workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
-                        ),
-                        Exercise(
-                            exerciseTypeDao.selectExerciseTypeByName("Cable row")?:0,
-                            90.0,
-                            System.currentTimeMillis(),
-                            workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
-                        ),
-                        Exercise(
-                            exerciseTypeDao.selectExerciseTypeByName("Incline")?:0,
-                            90.0,
-                            System.currentTimeMillis(),
-                            workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
-                        ),
-                        Exercise(
-                            exerciseTypeDao.selectExerciseTypeByName("Preacher barbell curl")?:0,
-                            90.0,
-                            System.currentTimeMillis(),
-                            workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
-                        ),
-                        Exercise(
-                            exerciseTypeDao.selectExerciseTypeByName("Barbell curl")?:0,
-                            90.0,
-                            System.currentTimeMillis(),
-                            workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
-                        ),
-                        Exercise(
-                            exerciseTypeDao.selectExerciseTypeByName("Preacher dumbell bar")?:0,
-                            90.0,
-                            System.currentTimeMillis(),
-                            workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
-                        ),
-                        Exercise(
-                            exerciseTypeDao.selectExerciseTypeByName("Wrist curl")?:0,
-                            90.0,
-                            System.currentTimeMillis(),
-                            workoutDao.selectWorkoutByName("Back + Biceps + Forearms")?:0
-                        )
-                    )
-
-                    exercises.forEach { exerciseDao.upsertExercise(it) }
-
-                    val sets = listOf(
-                        Set(
-                            setDao.autoNumbering(exerciseDao.getExerciseIdByName("Pull-up")?:0),
-                            85.0,
-                            10,
-                            System.currentTimeMillis(),
-                            exerciseDao.getExerciseIdByName("Pull-up")?:0
-                        ),
-                        Set(
-                            setDao.autoNumbering(exerciseDao.getExerciseIdByName("Pull-up")?:0),
-                            85.0,
-                            9,
-                            System.currentTimeMillis(),
-                            exerciseDao.getExerciseIdByName("Pull-up")?:0
-                        ),
-                        Set(
-                            setDao.autoNumbering(exerciseDao.getExerciseIdByName("Pull-up")?:0),
-                            85.0,
-                            8,
-                            System.currentTimeMillis(),
-                            exerciseDao.getExerciseIdByName("Pull-up")?:0
-                        ),
-                        Set(
-                            setDao.autoNumbering(exerciseDao.getExerciseIdByName("Pull-up")?:0),
-                            85.0,
-                            7,
-                            System.currentTimeMillis(),
-                            exerciseDao.getExerciseIdByName("Pull-up")?:0
-                        ),
-                        Set(
-                            setDao.autoNumbering(exerciseDao.getExerciseIdByName("Pull-up")?:0),
-                            85.0,
-                            6,
-                            System.currentTimeMillis(),
-                            exerciseDao.getExerciseIdByName("Pull-up")?:0
-                        ),
-                    )
-                    sets.forEach { setDao.upsertSet(it) }
-                }
-*/
 
                 val navController = rememberNavController()
                 val sharedViewModel: SharedViewModel = viewModel()
@@ -237,12 +224,18 @@ class MainActivity : ComponentActivity() {
                         AddWorkoutScreen(navController, { route -> handleNavigation(navController, route) }, workoutId, sharedViewModel)
                     }
 
-                    composable("addExerciseScreen/{exerciseId}") { backStackEntry ->
+                    composable("addExerciseScreen/{exerciseId}/{workoutId}") { backStackEntry ->
+                        val workoutId = backStackEntry.arguments?.getString("workoutId")?.toIntOrNull()
                         val exerciseId = backStackEntry.arguments?.getString("exerciseId")?.toIntOrNull()
-                        AddExerciseScreen(navController, { route -> handleNavigation(navController, route) }, exerciseId, sharedViewModel)
+                        AddExerciseScreen(navController, { route -> handleNavigation(navController, route) }, exerciseId, workoutId, sharedViewModel)
                     }
+
                     composable("settingsScreen/") {
                         SettingsScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel)
+                    }
+
+                    composable("notebook/") {
+                        NoteBookScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel)
                     }
                 }
 
