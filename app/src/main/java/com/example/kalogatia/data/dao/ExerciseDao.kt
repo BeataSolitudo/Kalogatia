@@ -36,4 +36,10 @@ interface ExerciseDao {
 
     @Query("INSERT INTO exercise (exerciseTypeId, restTime, workoutId) VALUES (:exerciseTypeId, :restTime, :workoutId)")
     suspend fun insertExercise(exerciseTypeId: Int, restTime: Int, workoutId: Int)
+
+    @Query("SELECT * FROM exercise WHERE exerciseId = :exerciseId")
+    suspend fun fetchExercise(exerciseId: Int): Exercise
+
+    @Query("UPDATE exercise SET restTime = :restTime WHERE exerciseId = :exerciseId")
+    suspend fun updateRestTime(exerciseId: Int, restTime: Int)
 }

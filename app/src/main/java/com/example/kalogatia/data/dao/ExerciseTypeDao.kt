@@ -24,4 +24,10 @@ interface ExerciseTypeDao {
 
     @Query("INSERT INTO exerciseType(name) VALUES (:name)")
     suspend fun insertExerciseType(name: String)
+
+    @Query("SELECT name FROM exercisetype WHERE exerciseTypeId = :exerciseTypeId")
+    fun fetchExerciseTypeName(exerciseTypeId: Int): String?
+
+    @Query("UPDATE exercisetype SET name = :exerciseTypeName WHERE exerciseTypeId = :exerciseTypeId")
+    suspend fun updateExerciseType(exerciseTypeName: String, exerciseTypeId: Int)
 }

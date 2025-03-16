@@ -3,14 +3,13 @@ package com.example.kalogatia.data.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
-import androidx.room.Upsert
 import com.example.kalogatia.data.entities.Set
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SetDao {
-    @Upsert
-    suspend fun upsertSet(set: Set)
+//    @Upsert
+//    suspend fun upsertSet(set: Set)
 
     @Delete
     suspend fun deleteSet(set: Set)
@@ -43,4 +42,13 @@ interface SetDao {
 
     @Query("SELECT * FROM `set` WHERE exerciseId = :exerciseId")
     fun fetchSetsByExerciseId(exerciseId: Int): Flow<List<Set>>
+
+    @Query("DELETE FROM `set` WHERE setId = :setId")
+    suspend fun deleteSet(setId: Int)
+
+    @Query("INSERT INTO `set`(setNumber, weight, repetition, exerciseId) VALUES (:setNumber, :weight, :repetition, :exerciseId)")
+    suspend fun insertSet(setNumber: Int, weight: Double, repetition: Int, exerciseId: Int)
+
+    @Query("UPDATE `set` SET setNumber = :setNumber, weight = :weight, repetition = :repetition WHERE setId = :setId")
+    suspend fun updateSet(setId: Int, setNumber: Int, weight: Double, repetition: Int)
 }

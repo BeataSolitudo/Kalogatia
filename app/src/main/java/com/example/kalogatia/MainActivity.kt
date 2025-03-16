@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
                     ExerciseType("Preacher dumbell bar"),
                     ExerciseType("Wrist curl")
                 )
-//
+
 //                lifecycleScope.launch {
 //                    users.forEach { userDao.upsertUser(it) }
 //                    workouts.forEach { workoutDao.insertWorkout(it.name, it.userId)}

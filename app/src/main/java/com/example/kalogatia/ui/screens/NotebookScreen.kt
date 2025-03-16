@@ -59,7 +59,6 @@ fun NoteBookScreen(
         // Bottom Bar - Navigation
         NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate, theme)
     }
-
 }
 
 @Composable
@@ -72,32 +71,16 @@ fun TopBarNotebook(modifier: Modifier, theme: AppColorScheme) {
     }
 }
 
-//@Composable
-//fun ContentNotebook(modifier: Modifier, theme: AppColorScheme) {
-//    Box(
-//        modifier = modifier
-//            .fillMaxWidth()
-//            .padding(30.dp),
-//        contentAlignment = Alignment.TopStart
-//    ) {
-//
-//    }
-//}
-
-
-
-
 @Composable
 fun ContentNotebook(modifier: Modifier, theme: AppColorScheme) {
     var text by remember { mutableStateOf("") }
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope() // Needed to save in a coroutine
+    val coroutineScope = rememberCoroutineScope()
 
-    // Load saved notes when the screen is first opened
     LaunchedEffect(Unit) {
         DataStoreManager.getNotes(context).collect { myNotes ->
             if (myNotes != null) {
-                text = myNotes // Ensure proper loading
+                text = myNotes
             }
         }
     }
@@ -119,7 +102,7 @@ fun ContentNotebook(modifier: Modifier, theme: AppColorScheme) {
                     Canvas(
                         modifier = Modifier.matchParentSize()
                     ) {
-                        val lineSpacing = 28.0.dp.toPx() // Match lineHeight of text
+                        val lineSpacing = 28.0.dp.toPx() // lineHeight
                         val numberOfLines = (size.height / lineSpacing).toInt() + 10 // Extra lines to scroll
 
                         for (i in 1..numberOfLines) {
@@ -144,11 +127,11 @@ fun ContentNotebook(modifier: Modifier, theme: AppColorScheme) {
                         textStyle = TextStyle(
                             color = theme.textColor,
                             fontSize = 22.sp,
-                            lineHeight = 28.sp // Adjust to match the lines
+                            lineHeight = 28.sp
                         ),
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(top = 30.dp) // Align text with the first line
+                            .padding(top = 30.dp) // Padding for first line
                     )
                 }
             }

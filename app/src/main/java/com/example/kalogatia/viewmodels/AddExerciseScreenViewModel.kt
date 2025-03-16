@@ -1,6 +1,5 @@
 package com.example.kalogatia.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,7 +13,9 @@ import com.example.kalogatia.data.dao.ExerciseWithType
 import com.example.kalogatia.data.dao.SetDao
 import com.example.kalogatia.data.dao.WorkoutPlanningDao
 import com.example.kalogatia.data.database.DatabaseKalogatia
+import com.example.kalogatia.data.entities.Exercise
 import com.example.kalogatia.data.entities.Set
+import com.example.kalogatia.data.entities.WorkoutPlanning
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -96,11 +97,9 @@ class AddExerciseScreenViewModel(
         viewModelScope.launch {
             val id = exerciseTypeDao.selectExerciseTypeByName(name)
             _exerciseTypeId.value = id
-            Log.d("ExerciseTypeViewModel", "Fetched ID: $id")
             onFetched(id)
         }
     }
-
 
     fun insertExercise(exerciseTypeId: Int, restTime: Int, workoutId: Int) {
         viewModelScope.launch {
@@ -108,6 +107,72 @@ class AddExerciseScreenViewModel(
         }
     }
 
+    private var _exercise = MutableStateFlow<Exercise?>(null)
+    val exercise: StateFlow<Exercise?> = _exercise
+
+    fun fetchExercise(exerciseId: Int) {
+        viewModelScope.launch {
+            val exercise = exerciseDao.fetchExercise(exerciseId)
+            _exercise.value = exercise
+        }
+    }
+
+    fun updateExerciseType(exerciseTypeName: String, exerciseTypeId: Int) {
+        viewModelScope.launch {
+            exerciseTypeDao.updateExerciseType(exerciseTypeName, exerciseTypeId)
+        }
+    }
+
+    fun updateRestTime(exerciseId: Int, restTime: Int) {
+        viewModelScope.launch {
+            exerciseDao.updateRestTime(exerciseId, restTime)
+        }
+    }
+
+    private var _workoutPlanning = MutableStateFlow<WorkoutPlanning?>(null)
+    val workoutPlanning: StateFlow<WorkoutPlanning?> = _workoutPlanning
+
+    fun fetchWorkoutPlanning(workoutId: Int?) {
+        viewModelScope.launch {
+            workoutId?.let { workoutPlanningDao.fetchWorkoutPlanning(it) }
+        }
+    }
+
+    suspend fun updateWeekDay(workoutId: Int, weekDay: Int, newWeekDay: Int) {
+        viewModelScope.launch {
+            workoutPlanningDao.updateWorkoutPlanningWeekDay(workoutId = workoutId, weekDay = weekDay, newWeekDay = newWeekDay)
+        }
+    }
+
+    suspend fun insertWorkoutDay(workoutId: Int, userId: Int, weekDay: Int) {
+        viewModelScope.launch {
+            workoutPlanningDao.insertWorkoutPlanning(workoutId, userId, weekDay)
+        }
+    }
+
+    suspend fun deleteWorkoutPlanning(workoutId: Int, weekDay: Int) {
+        viewModelScope.launch {
+            workoutPlanningDao.deleteWorkoutPlanning(workoutId, weekDay)
+        }
+    }
+
+    suspend fun deleteSets(setsIds: List<Int>) {
+        setsIds.forEach { setId ->
+            setDao.deleteSet(setId)
+        }
+    }
+
+    suspend fun insertSet(setNumber: Int, weight: Double, repetition: Int, exerciseId: Int) {
+        viewModelScope.launch {
+            setDao.insertSet(setNumber, weight, repetition, exerciseId)
+        }
+    }
+
+    suspend fun updateSet(setId: Int, setNumber: Int, weight: Double, repetition: Int) {
+        viewModelScope.launch {
+            setDao.updateSet(setId, setNumber, weight, repetition)
+        }
+    }
 
     companion object {
         fun provideFactory(exerciseId: Int?): ViewModelProvider.Factory {
