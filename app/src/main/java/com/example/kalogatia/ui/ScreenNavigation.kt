@@ -50,12 +50,7 @@ fun Navigation(navController: NavController, onNavigate: (String) -> Unit, theme
     ) {
         NavItem(item = ScreenNavigation.Home, isSelected = (currentRoute == ScreenNavigation.Home.route), onNavigate, theme)
         NavItem(item = ScreenNavigation.Graph, isSelected = (currentRoute == ScreenNavigation.Graph.route), onNavigate, theme)
-        NavItem(
-            ScreenNavigation.Add,
-            isSelected = (currentRoute?.startsWith("addWorkoutScreen") == true || currentRoute?.startsWith("addExerciseScreen") == true),
-            { handleNavigation(navController, "addWorkoutScreen/{workoutId}", workoutId) }, // ✅ Pass workoutId dynamically
-            theme
-        )
+        NavItem(item = ScreenNavigation.Add, isSelected = (currentRoute == ScreenNavigation.Add.route), onNavigate, theme)
         NavItem(item = ScreenNavigation.Calendar, isSelected = (currentRoute == ScreenNavigation.Calendar.route), onNavigate, theme)
         NavItem(item = ScreenNavigation.Settings, isSelected = (currentRoute == ScreenNavigation.Settings.route), onNavigate, theme)
     }
@@ -79,12 +74,10 @@ fun NavItem(item: ScreenNavigation, isSelected: Boolean, onNavigate: (String) ->
     }
 }
 
-fun handleNavigation(navController: NavController, route: String, workoutId: Int? = null) {
+fun handleNavigation(navController: NavController, route: String) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
-    if (currentRoute == "addWorkoutScreen/{workoutId}" && route == "addWorkoutScreen/{workoutId}") {
-        navController.navigate("addExerciseScreen/{exerciseId}/$workoutId")
-    } else {
+    if (!(currentRoute == "addWorkoutScreen/{workoutId}" && route == "addWorkoutScreen/{workoutId}")) {
         navController.navigate(route)
     }
 }

@@ -37,7 +37,6 @@ import androidx.navigation.NavController
 import com.example.kalogatia.data.entities.Workout
 import com.example.kalogatia.data.relations.WorkoutWithWorkoutPlanning
 import com.example.kalogatia.ui.AutoResizedText
-import com.example.kalogatia.ui.Buttons.PlayButton
 import com.example.kalogatia.ui.Divider
 import com.example.kalogatia.ui.NavigationLayout
 import com.example.kalogatia.ui.NotFound
@@ -166,7 +165,7 @@ fun TopBarMainScreen(modifier: Modifier, workoutName: String, theme: AppColorSch
                     .padding(end = 15.dp),
                 contentAlignment = Alignment.Center
             ) {
-                PlayButton()
+                //PlayButton()
             }
         }
     }

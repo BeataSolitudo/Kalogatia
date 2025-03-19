@@ -95,6 +95,22 @@ class SharedViewModel(application: Application): AndroidViewModel(application) {
     private val _fetchedWorkout = MutableStateFlow<Workout?>(null)
     val fetchedWorkout: StateFlow<Workout?> = _fetchedWorkout
 
+    private var _selectedWorkoutId = MutableStateFlow<Int?>(null)
+    val selectedWorkoutId: StateFlow<Int?> = _selectedWorkoutId
+
+    private val _bottomSheetVisible = MutableStateFlow<Boolean>(false)
+    val bottomSheetVisible: StateFlow<Boolean> = _bottomSheetVisible
+
+    fun showBottomSheet(workoutId: Int) {
+        _bottomSheetVisible.value = true
+        _selectedWorkoutId.value = workoutId
+        println("SharedViewModel shownBottomSheet")
+    }
+
+    fun hideBottomSheet() {
+        _bottomSheetVisible.value = false
+        _selectedWorkoutId.value = null
+    }
 
 
 

@@ -19,7 +19,11 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -242,7 +246,7 @@ fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewMo
                     .padding(end = 15.dp),
                 contentAlignment = Alignment.Center
             ) {
-                PlayButton()
+                workoutId?.let { PlayButton(navController, it) }
             }
         }
     }
@@ -363,6 +367,20 @@ fun AddWorkoutScreenContent(
                     )
 
                 }
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.BottomEnd
+        ) {
+            FloatingActionButton(
+                onClick = { navController.navigate("addExerciseScreen/{exerciseId}/$workoutId") },
+                containerColor = theme.borderColorGradient2,
+                modifier = Modifier.padding(bottom = 15.dp, end = 15.dp)
+            ) {
+                Icon(Icons.Filled.Add, "Add Exercise", tint = theme.textColor)
             }
         }
     }

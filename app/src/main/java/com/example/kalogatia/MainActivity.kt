@@ -26,6 +26,7 @@ import com.example.kalogatia.ui.screens.AddExerciseScreen
 import com.example.kalogatia.ui.screens.AddWorkoutScreen
 import com.example.kalogatia.ui.screens.MainScreen
 import com.example.kalogatia.ui.screens.NoteBookScreen
+import com.example.kalogatia.ui.screens.RunExerciseScreen
 import com.example.kalogatia.ui.screens.SettingsScreen
 import com.example.kalogatia.ui.theme.KalogatiaTheme
 import com.example.kalogatia.viewmodels.SharedViewModel
@@ -34,7 +35,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 // ctrl + shift + r = replace all
 
 class MainActivity : ComponentActivity() {
-    @SuppressLint("CoroutineCreationDuringComposition")
+    @SuppressLint("CoroutineCreationDuringComposition", "StateFlowValueCalledInComposition")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -236,6 +237,15 @@ class MainActivity : ComponentActivity() {
 
                     composable("notebook/") {
                         NoteBookScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel)
+                    }
+
+                    composable("runExerciseScreen/{workoutId}") { backStackEntry ->
+                        val workoutId = backStackEntry.arguments?.getString("workoutId")?.toInt()
+                        workoutId?.let {
+                            RunExerciseScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel,
+                                it
+                            )
+                        }
                     }
                 }
 
