@@ -21,7 +21,6 @@ import com.example.kalogatia.viewmodels.SharedViewModel
 @Composable
 fun PlayButton(navController: NavController, workoutId: Int) {
     val sharedViewModel: SharedViewModel = viewModel()
-    println("Play button clicked")
 
     Box(
         modifier = Modifier

@@ -213,7 +213,6 @@ fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewMo
         }
     }
 
-
     Box(
         modifier = modifier
             .fillMaxWidth(),

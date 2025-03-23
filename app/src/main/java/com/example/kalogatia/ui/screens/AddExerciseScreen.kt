@@ -257,7 +257,6 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
                     viewModel.deleteWorkoutPlanning(workoutId, selectedDayInt)
                     navController.navigate("addWorkoutScreen/${workoutId}")
                 }
-                // TODO: Sets
             }
 
         }
