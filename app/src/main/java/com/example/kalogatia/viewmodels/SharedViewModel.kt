@@ -33,7 +33,8 @@ class SharedViewModel(application: Application): AndroidViewModel(application) {
             textFieldBackgroundColor = Color(0xFF282639),
             borderColorGradient = Color(0xFF6A00F4),
             borderColorGradient2 = Color(0xFFF40072),
-            customButtonColor = Color(0xFF363352)
+            customButtonColor = Color(0xFF363352),
+            clickableTextFieldColor = Color(0xFF4B4970)
         )
     )
 
@@ -52,7 +53,8 @@ class SharedViewModel(application: Application): AndroidViewModel(application) {
             textFieldBackgroundColor = Color(0xFFFAFAFA),
             borderColorGradient = Color(0xFF0096ff),
             borderColorGradient2 = Color(0xFF87d4f5),
-            customButtonColor = Color(0xFF87d4f5)
+            customButtonColor = Color(0xFF87d4f5),
+            clickableTextFieldColor = Color(0xFFD6E1E6)
         )
     )
 
@@ -71,7 +73,8 @@ class SharedViewModel(application: Application): AndroidViewModel(application) {
             textFieldBackgroundColor = Color(0xFF282828),
             borderColorGradient = Color(0xFF0096ff),
             borderColorGradient2 = Color(0xFF001726),
-            customButtonColor = Color(0xFF363352)
+            customButtonColor = Color(0xFF363352),
+            clickableTextFieldColor = Color(0xFF3C3C3C)
         )
     )
 

@@ -106,10 +106,10 @@ fun SettingsScreenContent(modifier: Modifier, theme: AppColorScheme) {
     }
 
     if (emailDialog.value) {
-        AlertDialogExample(dialogTitle = "Our Mail", dialogText = "j.kalivoda.st@spseiostrava.cz", icon = Icons.Rounded.Mail, onDismissRequest =  { emailDialog.value = false })
+        myAlertDialog(dialogTitle = "Our Mail", dialogText = "j.kalivoda.st@spseiostrava.cz", icon = Icons.Rounded.Mail, onDismissRequest =  { emailDialog.value = false })
     }
     if (aboutDialog.value) {
-        AlertDialogExample(dialogTitle = "About", dialogText = "Kalogatia was my first project, created to help me and my friends track our progress more efficiently. Many apps offered either an amazing UI or great functionality, but unfortunately, not both. If an app had a great UI, it was often overwhelming, cluttered with distractions, and difficult to navigate. On the other hand, apps with excellent functionality often lacked a polished user interface. That's where Kalogatia comes in combining the best of both worlds!", icon = Icons.Rounded.AdUnits, onDismissRequest =  { aboutDialog.value = false })
+        myAlertDialog(dialogTitle = "About", dialogText = "Kalogatia was my first project, created to help me and my friends track our progress more efficiently. Many apps offered either an amazing UI or great functionality, but unfortunately, not both. If an app had a great UI, it was often overwhelming, cluttered with distractions, and difficult to navigate. On the other hand, apps with excellent functionality often lacked a polished user interface. That's where Kalogatia comes in combining the best of both worlds!", icon = Icons.Rounded.AdUnits, onDismissRequest =  { aboutDialog.value = false })
     }
 
     Box(
@@ -279,7 +279,7 @@ fun myDivider(modifier: Modifier) {
 }
 
 @Composable
-fun AlertDialogExample(
+fun myAlertDialog(
     onDismissRequest: () -> Unit,
     dialogTitle: String,
     dialogText: String,

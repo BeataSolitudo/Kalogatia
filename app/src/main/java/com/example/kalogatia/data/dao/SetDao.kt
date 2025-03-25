@@ -3,13 +3,14 @@ package com.example.kalogatia.data.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
+import androidx.room.Upsert
 import com.example.kalogatia.data.entities.Set
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SetDao {
-//    @Upsert
-//    suspend fun upsertSet(set: Set)
+    @Upsert
+    suspend fun upsertSet(set: Set)
 
     @Delete
     suspend fun deleteSet(set: Set)

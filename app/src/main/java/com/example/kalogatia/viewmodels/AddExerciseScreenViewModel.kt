@@ -21,13 +21,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-// Todo: Get exercise name thru id if exists
-// Todo: Get rest time if exists
-// Todo: Get workout day if exists
-// Todo: Get sets if exists
-
-// Fetch only if exerciseId is not null
-
 class AddExerciseScreenViewModel(
     exerciseId: Int?,
     private val exerciseTypeWithExerciseDao: ExerciseTypeWithExerciseDao,

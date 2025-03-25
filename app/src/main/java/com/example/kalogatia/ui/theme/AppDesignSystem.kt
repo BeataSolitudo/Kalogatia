@@ -17,4 +17,5 @@ data class AppColorScheme(
     val borderColorGradient: Color,
     val borderColorGradient2: Color,
     val customButtonColor: Color,
+    val clickableTextFieldColor: Color,
 )
