@@ -46,109 +46,52 @@ class MainActivity : ComponentActivity() {
         setContent {
             KalogatiaTheme {
 
-                val navController = rememberNavController()
-                val sharedViewModel: SharedViewModel = viewModel()
-                val theme by sharedViewModel.currentTheme.collectAsState()
+                    val databaseName = "kalogatia_db"
+    //applicationContext.deleteDatabase(databaseName)
 
-                WindowCompat.setDecorFitsSystemWindows(window, false)
-                val systemUiController = rememberSystemUiController()
-                SideEffect {
-                    systemUiController.setSystemBarsColor(
-                        color = theme.navigationColor,
-                        isNavigationBarContrastEnforced = false)
+    val userDao = DatabaseKalogatia.getInstance(this).userDao
+    val workoutDao = DatabaseKalogatia.getInstance(this).workoutDao
+    val workoutPlanningDao = DatabaseKalogatia.getInstance(this).workoutPlanningDao
+    val exerciseDao = DatabaseKalogatia.getInstance(this).exerciseDao
+    val setDao = DatabaseKalogatia.getInstance(this).setDao
+    val exerciseTypeDao = DatabaseKalogatia.getInstance(this).exerciseTypeDao
+    val historyWorkoutDao = DatabaseKalogatia.getInstance(this).historyWorkoutDao
+    val historyExerciseDao = DatabaseKalogatia.getInstance(this).historyExerciseDao
+    val historySetDao = DatabaseKalogatia.getInstance(this).historySetDao
+    val workoutWithWorkoutPlanningDao = DatabaseKalogatia.getInstance(this).workoutWithWorkoutPlanningDao
 
-                    systemUiController.setStatusBarColor(
-                        color = Color.Transparent, // Transparent top bar
-                        darkIcons = true
-                    )
-                }
+    val users = listOf(
+        User("superuser", "example@gmail.com", "")
+    )
 
-                NavHost(navController = navController, startDestination = "mainScreen/") {
-                    composable("mainScreen/") {
-                        MainScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel)
-                    }
+    val workouts = listOf(
+        Workout("Back + Biceps + Forearms", userId = 1),
+        Workout("Chest + Shoulders + Abs", userId = 1),
+        Workout("Legs + Triceps", userId = 1)
+    )
 
-                    composable("addWorkoutScreen/{workoutId}") { backStackEntry ->
-                        val workoutId = backStackEntry.arguments?.getString("workoutId")?.toIntOrNull()
-                        AddWorkoutScreen(navController, { route -> handleNavigation(navController, route) }, workoutId, sharedViewModel)
-                    }
+    val workoutPlanning = listOf(
+        WorkoutPlanning(1, 1, 1),
+        WorkoutPlanning(1, 1, 4),
+        WorkoutPlanning(2, 1, 2),
+        WorkoutPlanning(2, 1, 5),
+        WorkoutPlanning(3, 1, 3),
+        WorkoutPlanning(3, 1, 6)
+    )
 
-                    composable("addExerciseScreen/{exerciseId}/{workoutId}") { backStackEntry ->
-                        val workoutId = backStackEntry.arguments?.getString("workoutId")?.toIntOrNull()
-                        val exerciseId = backStackEntry.arguments?.getString("exerciseId")?.toIntOrNull()
-                        AddExerciseScreen(navController, { route -> handleNavigation(navController, route) }, exerciseId, workoutId, sharedViewModel)
-                    }
-
-                    composable("settingsScreen/") {
-                        SettingsScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel)
-                    }
-
-                    composable("notebook/") {
-                        NoteBookScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel)
-                    }
-
-                    composable("runExerciseScreen/{workoutId}") { backStackEntry ->
-                        val workoutId = backStackEntry.arguments?.getString("workoutId")?.toInt()
-                        workoutId?.let {
-                            RunExerciseScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel,
-                                it
-                            )
-                        }
-                    }
-                }
-
-            }
-        }
-    }
-}
-
-fun databseSomething() {
-//    val databaseName = "kalogatia_db"
-//    //applicationContext.deleteDatabase(databaseName)
-//
-//    val userDao = DatabaseKalogatia.getInstance(this).userDao
-//    val workoutDao = DatabaseKalogatia.getInstance(this).workoutDao
-//    val workoutPlanningDao = DatabaseKalogatia.getInstance(this).workoutPlanningDao
-//    val exerciseDao = DatabaseKalogatia.getInstance(this).exerciseDao
-//    val setDao = DatabaseKalogatia.getInstance(this).setDao
-//    val exerciseTypeDao = DatabaseKalogatia.getInstance(this).exerciseTypeDao
-//    val historyWorkoutDao = DatabaseKalogatia.getInstance(this).historyWorkoutDao
-//    val historyExerciseDao = DatabaseKalogatia.getInstance(this).historyExerciseDao
-//    val historySetDao = DatabaseKalogatia.getInstance(this).historySetDao
-//    val workoutWithWorkoutPlanningDao = DatabaseKalogatia.getInstance(this).workoutWithWorkoutPlanningDao
-//
-//    val users = listOf(
-//        User("superuser", "example@gmail.com", "")
-//    )
-//
-//    val workouts = listOf(
-//        Workout("Back + Biceps + Forearms", userId = 1),
-//        Workout("Chest + Shoulders + Abs", userId = 1),
-//        Workout("Legs + Triceps", userId = 1)
-//    )
-//
-//    val workoutPlanning = listOf(
-//        WorkoutPlanning(1, 1, 1),
-//        WorkoutPlanning(1, 1, 4),
-//        WorkoutPlanning(2, 1, 2),
-//        WorkoutPlanning(2, 1, 5),
-//        WorkoutPlanning(3, 1, 3),
-//        WorkoutPlanning(3, 1, 6)
-//    )
-//
-//    val exerciseTypes = listOf(
-//        ExerciseType("Pull-up"),
-//        ExerciseType("Deadlift"),
-//        ExerciseType("Chest-Supported row"),
-//        ExerciseType("Lat pull-down"),
-//        ExerciseType("Omni-grip supported row"),
-//        ExerciseType("Cable row"),
-//        ExerciseType("Incline"),
-//        ExerciseType("Preacher barbell curl"),
-//        ExerciseType("Barbell curl"),
-//        ExerciseType("Preacher dumbell bar"),
-//        ExerciseType("Wrist curl")
-//    )
+    val exerciseTypes = listOf(
+        ExerciseType("Pull-up"),
+        ExerciseType("Deadlift"),
+        ExerciseType("Chest-Supported row"),
+        ExerciseType("Lat pull-down"),
+        ExerciseType("Omni-grip supported row"),
+        ExerciseType("Cable row"),
+        ExerciseType("Incline"),
+        ExerciseType("Preacher barbell curl"),
+        ExerciseType("Barbell curl"),
+        ExerciseType("Preacher dumbell bar"),
+        ExerciseType("Wrist curl")
+    )
 
 //                lifecycleScope.launch {
 //                    users.forEach { userDao.upsertUser(it) }
@@ -256,4 +199,63 @@ fun databseSomething() {
 //                    )
 //                    sets.forEach { setDao.upsertSet(it) }
 //                }
+
+                val navController = rememberNavController()
+                val sharedViewModel: SharedViewModel = viewModel()
+                val theme by sharedViewModel.currentTheme.collectAsState()
+
+                WindowCompat.setDecorFitsSystemWindows(window, false)
+                val systemUiController = rememberSystemUiController()
+                SideEffect {
+                    systemUiController.setSystemBarsColor(
+                        color = theme.navigationColor,
+                        isNavigationBarContrastEnforced = false)
+
+                    systemUiController.setStatusBarColor(
+                        color = Color.Transparent, // Transparent top bar
+                        darkIcons = true
+                    )
+                }
+
+                NavHost(navController = navController, startDestination = "mainScreen/") {
+                    composable("mainScreen/") {
+                        MainScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel)
+                    }
+
+                    composable("addWorkoutScreen/{workoutId}") { backStackEntry ->
+                        val workoutId = backStackEntry.arguments?.getString("workoutId")?.toIntOrNull()
+                        AddWorkoutScreen(navController, { route -> handleNavigation(navController, route) }, workoutId, sharedViewModel)
+                    }
+
+                    composable("addExerciseScreen/{exerciseId}/{workoutId}") { backStackEntry ->
+                        val workoutId = backStackEntry.arguments?.getString("workoutId")?.toIntOrNull()
+                        val exerciseId = backStackEntry.arguments?.getString("exerciseId")?.toIntOrNull()
+                        AddExerciseScreen(navController, { route -> handleNavigation(navController, route) }, exerciseId, workoutId, sharedViewModel)
+                    }
+
+                    composable("settingsScreen/") {
+                        SettingsScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel)
+                    }
+
+                    composable("notebook/") {
+                        NoteBookScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel)
+                    }
+
+                    composable("runExerciseScreen/{workoutId}") { backStackEntry ->
+                        val workoutId = backStackEntry.arguments?.getString("workoutId")?.toInt()
+                        workoutId?.let {
+                            RunExerciseScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel,
+                                it
+                            )
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+}
+
+fun databseSomething() {
+
 }

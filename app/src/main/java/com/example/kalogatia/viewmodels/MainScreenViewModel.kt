@@ -45,8 +45,10 @@ class MainScreenViewModel(
 
     private fun fetchWorkouts() {
         viewModelScope.launch {
+            println(System.currentTimeMillis())
             val dbWorkouts = workoutDao.selectAllWorkouts().firstOrNull()
             _workouts.value = dbWorkouts ?: emptyList()
+            println(System.currentTimeMillis())
         }
     }
 

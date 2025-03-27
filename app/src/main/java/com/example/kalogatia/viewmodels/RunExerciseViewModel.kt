@@ -6,11 +6,17 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.kalogatia.data.dao.ExerciseDao
 import com.example.kalogatia.data.dao.ExerciseTypeDao
+import com.example.kalogatia.data.dao.HistoryExerciseDao
+import com.example.kalogatia.data.dao.HistorySetDao
+import com.example.kalogatia.data.dao.HistoryWorkoutDao
 import com.example.kalogatia.data.dao.SetDao
+import com.example.kalogatia.data.dao.WorkoutDao
 import com.example.kalogatia.data.database.DatabaseKalogatia
 import com.example.kalogatia.data.entities.Exercise
 import com.example.kalogatia.data.entities.ExerciseType
 import com.example.kalogatia.data.entities.Set
+import com.example.kalogatia.ui.screens.RunSetData
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,12 +24,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.lang.Thread.State
 
 class RunExerciseViewModel(
     private val workoutId: Int,
     private val setDao: SetDao,
     private val exerciseDao: ExerciseDao,
-    private val exerciseTypeDao: ExerciseTypeDao
+    private val exerciseTypeDao: ExerciseTypeDao,
+    private val workoutDao: WorkoutDao,
+    private val historyWorkoutDao: HistoryWorkoutDao,
+    private val historyExerciseDao: HistoryExerciseDao,
+    private val historySetDao: HistorySetDao,
 ): ViewModel() {
     private var _timer = MutableStateFlow(0)
     val timer: StateFlow<Int> = _timer
@@ -52,19 +64,16 @@ class RunExerciseViewModel(
         _timer.value = 0
     }
 
-    // 1️⃣ Store all exercises for the given workout
     private val _exercises = MutableStateFlow<List<Exercise>>(emptyList())
     val exercises: StateFlow<List<Exercise>> = _exercises.asStateFlow()
 
-    // 2️⃣ Store sets mapped by exerciseId
     private val _setsMap = MutableStateFlow<Map<Int, List<Set>>>(emptyMap())
     val setsMap: StateFlow<Map<Int, List<Set>>> = _setsMap.asStateFlow()
 
-    // 🔥 Fetch exercises + sets
     fun fetchExercises() {
         viewModelScope.launch {
-            val fetchedExercises = exerciseDao.fetchExercisesByWorkoutId(workoutId).first() // 🔥 Collect Flow
-            _exercises.value = fetchedExercises // ✅ Now assigns a List<Exercise>
+            val fetchedExercises = exerciseDao.fetchExercisesByWorkoutId(workoutId).first()
+            _exercises.value = fetchedExercises
             fetchSetsForExercises(fetchedExercises)
         }
     }
@@ -73,11 +82,11 @@ class RunExerciseViewModel(
         viewModelScope.launch {
             val newSetsMap = mutableMapOf<Int, List<Set>>()
             for (exercise in exercises) {
-                val exerciseId = exercise.exerciseId ?: continue // ✅ Skip if null
-                val fetchedSets = setDao.fetchSetsByExerciseId(exerciseId).first() // 🔥 Collect Flow
-                newSetsMap[exerciseId] = fetchedSets // ✅ Now assigns a List<Set>
+                val exerciseId = exercise.exerciseId ?: continue
+                val fetchedSets = setDao.fetchSetsByExerciseId(exerciseId).first()
+                newSetsMap[exerciseId] = fetchedSets
             }
-            _setsMap.value = newSetsMap // ✅ Correct type
+            _setsMap.value = newSetsMap
         }
     }
 
@@ -96,9 +105,8 @@ class RunExerciseViewModel(
 
     fun fetchExerciseTypes() {
         viewModelScope.launch {
-            // Fetch all exercise types from the DAO (assuming it returns a Flow)
-            val fetchedExerciseTypes = exerciseTypeDao.selectAllExerciseType().first() // Collect the Flow to get the result
-            _exerciseTypes.value = fetchedExerciseTypes // Update the state with the fetched list
+            val fetchedExerciseTypes = exerciseTypeDao.selectAllExerciseType().first()
+            _exerciseTypes.value = fetchedExerciseTypes
         }
     }
 
@@ -107,6 +115,13 @@ class RunExerciseViewModel(
 
     fun setClicked(value: Boolean) {
         _click.value = value
+    }
+
+    private var _click2 = MutableStateFlow<Boolean>(false)
+    val click2: StateFlow<Boolean> = _click2
+
+    fun setClicked2(value: Boolean) {
+        _click2.value = value
     }
 
     suspend fun deleteSets(setsIds: List<Int>) {
@@ -127,6 +142,39 @@ class RunExerciseViewModel(
         }
     }
 
+    private var _historyWorkoutId = MutableStateFlow<Int?>(null)
+    val historyWorkoutId: StateFlow<Int?> = _historyWorkoutId
+
+    suspend fun insertHistoryWorkout(workoutId: Int) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val workoutName: String? = workoutDao.getWorkoutName(workoutId)
+                val historyWorkoutId = workoutName?.let { historyWorkoutDao.insertHistoryWorkout(it, 1).toInt() }
+                _historyWorkoutId.value = historyWorkoutId  // Use `.value` to update StateFlow
+                setClicked2(true)
+            }
+        }
+    }
+
+    suspend fun makeCopy(exercise: Exercise, sets: List<RunSetData>) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {  // Moves database operations to background thread
+                val historyExerciseId= historyWorkoutId.value?.let {
+                    historyExerciseDao.insertExercise(exercise.exerciseTypeId, exercise.restTime,
+                        it
+                    )
+                }
+
+                sets.forEach { set ->
+                    historyExerciseId.let {
+                        it?.let { it1 -> historySetDao.insertSet(set.position, set.weight, set.reps, it1.toInt()) }
+                    }
+                }
+            }
+        }
+    }
+
+
     companion object {
         fun provideFactory(workoutId: Int): ViewModelProvider.Factory {
             return object : ViewModelProvider.Factory {
@@ -139,6 +187,10 @@ class RunExerciseViewModel(
                         dbInstance.setDao,
                         dbInstance.exerciseDao,
                         dbInstance.exerciseTypeDao,
+                        dbInstance.workoutDao,
+                        dbInstance.historyWorkoutDao,
+                        dbInstance.historyExerciseDao,
+                        dbInstance.historySetDao,
                     ) as T
                 }
             }

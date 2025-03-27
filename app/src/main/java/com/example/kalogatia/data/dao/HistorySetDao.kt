@@ -17,4 +17,7 @@ interface HistorySetDao {
 
     @Query("SELECT * FROM historySet")
     fun selectAllHistorySet(): Flow<List<HistorySet>>
+
+    @Query("INSERT INTO HistorySet(setNumber, weight, repetition, historyExerciseId) VALUES(:setNumber, :weight, :repetition, :historyExerciseId)")
+    suspend fun insertSet(setNumber: Int, weight: Double, repetition: Int, historyExerciseId: Int)
 }

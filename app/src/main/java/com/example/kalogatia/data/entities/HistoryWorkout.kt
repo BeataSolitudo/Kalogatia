@@ -1,5 +1,6 @@
 package com.example.kalogatia.data.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.sql.Timestamp
@@ -7,9 +8,9 @@ import java.sql.Timestamp
 @Entity
 data class HistoryWorkout (
     val name: String,
-    val myDate: Long,
-    val createdAt: Long,
+    @ColumnInfo(defaultValue = "CURRENT_TIMESTAMP")
+    val createdAt: String? = null,
     val userId: Int,
     @PrimaryKey(autoGenerate = true)
-    val historyWorkoutId: Int
+    val historyWorkoutId: Int? = null
 )

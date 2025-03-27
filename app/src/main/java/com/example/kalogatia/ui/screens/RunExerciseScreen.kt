@@ -86,6 +86,7 @@ fun RunExerciseScreen(
 
     val exercises by viewModel.exercises.collectAsState()
     val setsMap by viewModel.setsMap.collectAsState()
+    val clicked by viewModel.click.collectAsState()
 
     // Fetch exercises and sets when screen is launched
     LaunchedEffect(Unit) {
@@ -96,6 +97,12 @@ fun RunExerciseScreen(
         viewModel.fetchExerciseTypes()
     }
 
+    LaunchedEffect(clicked) {
+        if (clicked) {
+            viewModel.insertHistoryWorkout(workoutId)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -103,7 +110,7 @@ fun RunExerciseScreen(
             .windowInsetsPadding(WindowInsets.systemBars),
     ) {
         TopBarRunExerciseScreen(modifier = Modifier.weight(0.10f), theme, timerValue, workoutId, navController, viewModel)
-        RunExerciseScreenContent(modifier = Modifier.weight(0.80f), theme, exercises, setsMap, viewModel, navController)
+        RunExerciseScreenContent(modifier = Modifier.weight(0.80f), theme, exercises, setsMap, viewModel, navController, workoutId)
         NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate, theme)
     }
 }
@@ -152,7 +159,8 @@ fun RunExerciseScreenContent(
     exercises: List<Exercise>,
     setsMap: Map<Int, List<Set>>,
     viewModel: RunExerciseViewModel,
-    navController: NavController
+    navController: NavController,
+    workoutId: Int
 ) {
     Box(
         modifier = modifier.fillMaxWidth(),
@@ -167,7 +175,7 @@ fun RunExerciseScreenContent(
             } else {
                 exercises.forEach { exercise ->
                     val exerciseSets = setsMap[exercise.exerciseId] ?: emptyList()
-                    ExerciseWithSet(exercise, exerciseSets, theme, viewModel, navController)
+                    ExerciseWithSet(exercise, exerciseSets, theme, viewModel, navController, workoutId)
                 }
             }
         }
@@ -197,8 +205,9 @@ fun tmpDoneButton(circleSize: Dp, iconSize: Dp, modifier: Modifier, onDone: () -
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun ExerciseWithSet(exercise: Exercise, sets: List<Set>, theme: AppColorScheme, viewModel: RunExerciseViewModel, navController: NavController) {
+fun ExerciseWithSet(exercise: Exercise, sets: List<Set>, theme: AppColorScheme, viewModel: RunExerciseViewModel, navController: NavController, workoutId: Int) {
     val clicked by viewModel.click.collectAsState()
+    val clicked2 by viewModel.click2.collectAsState()
     val exerciseTypes = viewModel.exerciseTypes.collectAsState().value
     val exerciseTypeName = exerciseTypes.find { it.exerciseTypeId == exercise.exerciseTypeId }?.name
     var tmpSetList = remember { mutableStateListOf<RunSetData>() }
@@ -251,11 +260,12 @@ fun ExerciseWithSet(exercise: Exercise, sets: List<Set>, theme: AppColorScheme, 
         }
     }
 
-    LaunchedEffect(clicked) {
-        if (clicked) {
-            viewModel.setClicked(false)
+    LaunchedEffect(clicked2) {
+        if (clicked2) {
+            viewModel.setClicked2(false)
             navController.navigate("mainScreen/")
             println("Navigate")
+            viewModel.makeCopy(exercise, tmpSetList)
         }
     }
 

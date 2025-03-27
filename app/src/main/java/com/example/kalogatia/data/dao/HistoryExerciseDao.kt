@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
+import com.example.kalogatia.data.entities.Exercise
 import com.example.kalogatia.data.entities.HistoryExercise
 import kotlinx.coroutines.flow.Flow
 
@@ -17,4 +18,7 @@ interface HistoryExerciseDao {
 
     @Query("SELECT * FROM historyExercise")
     fun selectAllHistoryExercise(): Flow<List<HistoryExercise>>
+
+    @Query("INSERT INTO HistoryExercise(exerciseTypeId, restTime, historyWorkoutId) VALUES(:exerciseType, :restTime, :historyWorkoutId)")
+    suspend fun insertExercise(exerciseType: Int, restTime: Int, historyWorkoutId: Int): Long
 }

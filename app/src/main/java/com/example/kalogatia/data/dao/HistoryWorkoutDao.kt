@@ -17,4 +17,7 @@ interface HistoryWorkoutDao {
 
     @Query("SELECT * FROM historyworkout")
     fun selectAllHistoryWorkout(): Flow<List<HistoryWorkout>>
+
+    @Query("INSERT INTO HistoryWorkout(name, userId) VALUES(:name, :userId)")
+    suspend fun insertHistoryWorkout(name: String, userId: Int): Long
 }
