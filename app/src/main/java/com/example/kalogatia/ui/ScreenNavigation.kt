@@ -37,7 +37,7 @@ sealed class ScreenNavigation(
     object Home : ScreenNavigation(id = 0, title ="Home", selectedIconId = Icons.Rounded.Home, unSelectedIconId = Icons.Rounded.Home, route = "mainScreen/")
     object Calendar : ScreenNavigation(id = 1, title ="Notebook", selectedIconId = Icons.Rounded.ContentPaste, unSelectedIconId = Icons.Rounded.ContentPaste, route = "notebook/")
     object Add : ScreenNavigation(id = 1, title ="Add", selectedIconId = Icons.Rounded.Add, unSelectedIconId = Icons.Rounded.Add, route = "addWorkoutScreen/{workoutId}")
-    object Graph : ScreenNavigation(id = 1, title ="Graph", selectedIconId = Icons.Rounded.AutoGraph, unSelectedIconId = Icons.Rounded.AutoGraph, route = "")
+    object Graph : ScreenNavigation(id = 1, title ="Graph", selectedIconId = Icons.Rounded.AutoGraph, unSelectedIconId = Icons.Rounded.AutoGraph, route = "graphScreen/")
     object Settings : ScreenNavigation(id = 1, title ="Settings", selectedIconId = Icons.Rounded.Settings, unSelectedIconId = Icons.Rounded.Settings, route = "settingsScreen/")
 }
 

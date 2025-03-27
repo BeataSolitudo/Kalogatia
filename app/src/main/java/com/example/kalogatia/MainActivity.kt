@@ -27,6 +27,7 @@ import com.example.kalogatia.data.entities.WorkoutPlanning
 import com.example.kalogatia.ui.handleNavigation
 import com.example.kalogatia.ui.screens.AddExerciseScreen
 import com.example.kalogatia.ui.screens.AddWorkoutScreen
+import com.example.kalogatia.ui.screens.GraphScreen
 import com.example.kalogatia.ui.screens.MainScreen
 import com.example.kalogatia.ui.screens.NoteBookScreen
 import com.example.kalogatia.ui.screens.RunExerciseScreen
@@ -248,6 +249,10 @@ class MainActivity : ComponentActivity() {
                                 it
                             )
                         }
+                    }
+
+                    composable("graphScreen/") {
+                        GraphScreen(navController, { route -> handleNavigation(navController, route) }, sharedViewModel)
                     }
                 }
 

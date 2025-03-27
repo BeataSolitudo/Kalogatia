@@ -150,7 +150,7 @@ class RunExerciseViewModel(
             withContext(Dispatchers.IO) {
                 val workoutName: String? = workoutDao.getWorkoutName(workoutId)
                 val historyWorkoutId = workoutName?.let { historyWorkoutDao.insertHistoryWorkout(it, 1).toInt() }
-                _historyWorkoutId.value = historyWorkoutId  // Use `.value` to update StateFlow
+                _historyWorkoutId.value = historyWorkoutId
                 setClicked2(true)
             }
         }
@@ -158,7 +158,7 @@ class RunExerciseViewModel(
 
     suspend fun makeCopy(exercise: Exercise, sets: List<RunSetData>) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {  // Moves database operations to background thread
+            withContext(Dispatchers.IO) {
                 val historyExerciseId= historyWorkoutId.value?.let {
                     historyExerciseDao.insertExercise(exercise.exerciseTypeId, exercise.restTime,
                         it

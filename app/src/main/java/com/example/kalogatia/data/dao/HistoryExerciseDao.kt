@@ -21,4 +21,7 @@ interface HistoryExerciseDao {
 
     @Query("INSERT INTO HistoryExercise(exerciseTypeId, restTime, historyWorkoutId) VALUES(:exerciseType, :restTime, :historyWorkoutId)")
     suspend fun insertExercise(exerciseType: Int, restTime: Int, historyWorkoutId: Int): Long
+
+    @Query("SELECT * FROM HistoryExercise WHERE exerciseTypeId = :exerciseTypeId")
+    fun fetchHistoryExercisesByExerciseType(exerciseTypeId: Int): Flow<List<HistoryExercise?>>
 }

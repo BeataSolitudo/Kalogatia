@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.kalogatia"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -89,4 +89,8 @@ dependencies {
 
     // Add the Accompanist System UI Controller dependency
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.31.2-alpha")
+
+    // YChart - graph
+    implementation ("co.yml:ycharts:2.1.0")
+//    implementation ("io.github.ehsannarmani:compose-charts:0.1.2")
 }
