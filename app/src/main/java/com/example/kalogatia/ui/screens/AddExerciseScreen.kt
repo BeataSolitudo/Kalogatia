@@ -277,6 +277,8 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Box(modifier = Modifier.weight(0.5f)) {
+                val regex = "^[1-9][0-9]*$".toRegex()   // Only whole positive numbers
+
                 Column {
                     Text(
                         text = "Rest time",
@@ -286,7 +288,11 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
                     )
                     MyTextField(
                         value = restTime,
-                        onValueChange = { restTime = it },
+                        onValueChange = { newValue ->
+                            if (newValue.isEmpty() || newValue.matches(regex)) {
+                                restTime = newValue
+                            }
+                        },
                         placeholderText = "Rest Time in s",
                         theme,
                         emptyRestTime
