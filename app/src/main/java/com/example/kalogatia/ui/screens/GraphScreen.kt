@@ -17,9 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -31,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,11 +57,10 @@ import co.yml.charts.ui.linechart.model.LineType
 import co.yml.charts.ui.linechart.model.SelectionHighlightPoint
 import co.yml.charts.ui.linechart.model.SelectionHighlightPopUp
 import co.yml.charts.ui.linechart.model.ShadowUnderLine
-import com.example.kalogatia.ui.Divider
-import com.example.kalogatia.ui.NavigationLayout
+import com.example.kalogatia.ui.components.Divider
+import com.example.kalogatia.ui.components.NavigationLayout
 import com.example.kalogatia.ui.theme.AppColorScheme
 import com.example.kalogatia.viewmodels.GraphScreenViewModel
-import com.example.kalogatia.viewmodels.RunExerciseViewModel
 import com.example.kalogatia.viewmodels.SharedViewModel
 
 @Composable
@@ -108,86 +105,90 @@ fun GraphScreenContent(modifier: Modifier, theme: AppColorScheme, viewModel: Gra
             .padding(10.dp),
         contentAlignment = Alignment.TopStart
     ) {
-        var steps = 6
+        val steps = 6
 
         val noData: List<Point> = listOf(
-            Point(0f, 0f)
+            Point(0f, 0f),
+            Point(1f, 445f),
         )
 
         var pointsData by remember { mutableStateOf(noData) }
-        var chartData by remember { mutableStateOf(noData) }
-
-        chartData = if (pointsData.isEmpty()) noData else pointsData
 
         LaunchedEffect(sets) {
             println("You selected set")
-            pointsData = sets.mapNotNull { set ->
+            println(sets)
+            pointsData = sets.mapIndexedNotNull { index, set ->
                 if (set.max_weight != null && set.year != null) {
-                    val x = set.year.toFloat()
                     val y = set.max_weight.toFloat()
-                    Point(x, y)
+                    Point(index.toFloat(), y)
                 } else {
                     null
                 }
             }
 
-            chartData = if (pointsData.isEmpty()) noData else pointsData
-            println(chartData)
+            if (pointsData.isEmpty()) {
+                pointsData = noData
+            }
+
+            println(pointsData)
         }
 
+        // Move creation of lineChartData inside a derivedStateOf block
+        val lineChartData by remember(pointsData) {
+            derivedStateOf {
+                val xAxisData = AxisData.Builder()
+                    .axisStepSize(100.dp)
+                    .backgroundColor(Color.Transparent)
+                    .steps(pointsData.size - 1)
+                    .labelData { i -> if (sets.size > i) (sets[i].week_of_year + " - " + sets[i].year) else "anlaky"}
+                    .labelAndAxisLinePadding(15.dp)
+                    .axisLineColor(theme.selectedNavigationItemColor)
+                    .axisLabelColor(theme.selectedNavigationItemColor)
+                    .build()
 
+                val yAxisData = AxisData.Builder()
+                    .steps(steps)
+                    .backgroundColor(theme.backgroundColor)
+                    .labelAndAxisLinePadding(20.dp)
+                    .labelData { i ->
+                        val yScale = 100 / steps
+                        (i * yScale).toString()
+                    }
+                    .axisLineColor(theme.selectedNavigationItemColor)
+                    .axisLabelColor(theme.selectedNavigationItemColor)
+                    .build()
 
-        val xAxisData = AxisData.Builder()
-            .axisStepSize(100.dp)
-            .backgroundColor(Color.Transparent)
-            .steps(chartData.size - 1)
-            .labelData { i -> i.toString() }
-            .labelAndAxisLinePadding(15.dp)
-            .axisLineColor(theme.selectedNavigationItemColor)
-            .axisLabelColor(theme.selectedNavigationItemColor)
-            .build()
-
-        val yAxisData = AxisData.Builder()
-            .steps(steps)
-            .backgroundColor(theme.backgroundColor)
-            .labelAndAxisLinePadding(20.dp)
-            .labelData { i ->
-                val yScale = 100 / steps
-                (i * yScale).toString()
-            }
-            .axisLineColor(theme.selectedNavigationItemColor)
-            .axisLabelColor(theme.selectedNavigationItemColor)
-            .build()
-
-        val lineChartData = LineChartData(
-            linePlotData = LinePlotData(
-                lines = listOf(
-                    Line(
-                        dataPoints = chartData,
-                        LineStyle(
-                            color = theme.textColor,    // Color of graph line
-                            lineType = LineType.SmoothCurve(isDotted = false),
-                        ),
-                        IntersectionPoint(color = theme.textColor),
-                        SelectionHighlightPoint(color = theme.selectedNavigationItemColor),
-                        ShadowUnderLine(
-                            alpha = 0.5f,
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    theme.selectedNavigationItemColor,
-                                    Color.Transparent
-                                )
+                LineChartData(
+                    linePlotData = LinePlotData(
+                        lines = listOf(
+                            Line(
+                                dataPoints = pointsData,
+                                LineStyle(
+                                    color = theme.textColor,    // Color of graph line
+                                    lineType = LineType.SmoothCurve(isDotted = false),
+                                ),
+                                IntersectionPoint(color = theme.textColor),
+                                SelectionHighlightPoint(color = theme.selectedNavigationItemColor),
+                                ShadowUnderLine(
+                                    alpha = 0.5f,
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            theme.selectedNavigationItemColor,
+                                            Color.Transparent
+                                        )
+                                    )
+                                ),
+                                SelectionHighlightPopUp()
                             )
                         ),
-                        SelectionHighlightPopUp()
-                    )
-                ),
-            ),
-            xAxisData = xAxisData,
-            yAxisData = yAxisData,
-            gridLines = GridLines(),
-            backgroundColor = theme.backgroundColor
-        )
+                    ),
+                    xAxisData = xAxisData,
+                    yAxisData = yAxisData,
+                    gridLines = GridLines(),
+                    backgroundColor = theme.backgroundColor
+                )
+            }
+        }
 
         var selectedTab by remember { mutableStateOf(0) }
 

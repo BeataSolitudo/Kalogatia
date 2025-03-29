@@ -63,8 +63,8 @@ import androidx.navigation.NavController
 import com.example.kalogatia.data.entities.Set
 import com.example.kalogatia.ui.Buttons.DoneButton
 import com.example.kalogatia.ui.Buttons.RemoveButton
-import com.example.kalogatia.ui.Divider
-import com.example.kalogatia.ui.NavigationLayout
+import com.example.kalogatia.ui.components.Divider
+import com.example.kalogatia.ui.components.NavigationLayout
 import com.example.kalogatia.ui.theme.AppColorScheme
 import com.example.kalogatia.viewmodels.AddExerciseScreenViewModel
 import com.example.kalogatia.viewmodels.SharedViewModel

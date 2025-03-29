@@ -7,13 +7,17 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.example.kalogatia.data.dao.ExerciseDao
+import com.example.kalogatia.data.dao.SetDao
 import com.example.kalogatia.data.dao.WorkoutDao
+import com.example.kalogatia.data.dao.WorkoutPlanningDao
 import com.example.kalogatia.data.dao.WorkoutWithWorkoutPlanningDao
 import com.example.kalogatia.data.database.DatabaseKalogatia
 import com.example.kalogatia.data.entities.Workout
 import com.example.kalogatia.data.relations.WorkoutWithWorkoutPlanning
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -21,7 +25,10 @@ import java.time.LocalDate
 @RequiresApi(Build.VERSION_CODES.O)
 class MainScreenViewModel(
     private val workoutDao: WorkoutDao,
-    private val workoutWithWorkoutPlanningDao: WorkoutWithWorkoutPlanningDao
+    private val workoutWithWorkoutPlanningDao: WorkoutWithWorkoutPlanningDao,
+    private val exerciseDao: ExerciseDao,
+    private val setDao: SetDao,
+    private val workoutPlanningDao: WorkoutPlanningDao
 ) : ViewModel() {
 
     private val _workouts = MutableStateFlow<List<Workout>>(emptyList())
@@ -75,7 +82,25 @@ class MainScreenViewModel(
         }
     }
 
-    // ViewModel Factory (Companion Object)
+    fun cascadeDeleteWorkout(workoutId: Int) {
+        viewModelScope.launch {
+            val exerciseIds = exerciseDao.fetchExerciseIds(workoutId).first()
+
+            if (exerciseIds.isNotEmpty()) {
+                setDao.deleteSetsByExerciseIds(exerciseIds)
+            }
+
+            exerciseDao.deleteExercise(workoutId)
+            workoutPlanningDao.deleteWorkoutPlanning(workoutId)
+            workoutDao.deleteWorkout(workoutId)
+
+            // Fetch updated workouts to trigger UI refresh
+            fetchWorkoutsAndWorkoutPlanning()
+            fetchIncompleteWorkouts()
+        }
+    }
+
+
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -83,14 +108,16 @@ class MainScreenViewModel(
                 modelClass: Class<T>,
                 extras: CreationExtras
             ): T {
-                val application = checkNotNull(extras[APPLICATION_KEY]) // Getting application instance
+                val application = checkNotNull(extras[APPLICATION_KEY])
+                val dbInstance = DatabaseKalogatia.getInstance(application)
 
-                // Get the instance of WorkoutDao
-                val workoutDao = DatabaseKalogatia.getInstance(application).workoutDao
-                val workoutPlanningDao = DatabaseKalogatia.getInstance(application).workoutPlanningDao
-                val workoutWithWorkoutPlanningDao = DatabaseKalogatia.getInstance(application).workoutWithWorkoutPlanningDao
-
-                return MainScreenViewModel(workoutDao, workoutWithWorkoutPlanningDao) as T
+                return MainScreenViewModel(
+                    dbInstance.workoutDao,
+                    dbInstance.workoutWithWorkoutPlanningDao,
+                    dbInstance.exerciseDao,
+                    dbInstance.setDao,
+                    dbInstance.workoutPlanningDao
+                ) as T
             }
         }
     }

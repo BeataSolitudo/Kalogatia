@@ -35,4 +35,7 @@ interface WorkoutDao {
 
     @Query("SELECT workout.* FROM workout LEFT JOIN workoutplanning ON workout.workoutId = workoutplanning.workoutId WHERE workoutplanning.workoutId IS NULL")
     fun selectIncompleteWorkouts(): Flow<List<Workout>?>
+
+    @Query("DELETE FROM workout WHERE workoutId = :workoutId")
+    suspend fun deleteWorkout(workoutId: Int)
 }

@@ -52,4 +52,8 @@ interface SetDao {
 
     @Query("UPDATE `set` SET setNumber = :setNumber, weight = :weight, repetition = :repetition WHERE setId = :setId")
     suspend fun updateSet(setId: Int, setNumber: Int, weight: Double, repetition: Int)
+
+    @Query("DELETE FROM `set` WHERE exerciseId IN (:exerciseIds)")
+    suspend fun deleteSetsByExerciseIds(exerciseIds: List<Int>)
+
 }

@@ -49,9 +49,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.kalogatia.data.dao.ExerciseWithType
 import com.example.kalogatia.ui.Buttons.PlayButton
-import com.example.kalogatia.ui.Divider
-import com.example.kalogatia.ui.NavigationLayout
-import com.example.kalogatia.ui.NotFound
+import com.example.kalogatia.ui.components.Divider
+import com.example.kalogatia.ui.components.NavigationLayout
+import com.example.kalogatia.ui.components.NotFound
 import com.example.kalogatia.ui.theme.AppColorScheme
 import com.example.kalogatia.viewmodels.AddWorkoutScreenViewModel
 import com.example.kalogatia.viewmodels.SharedViewModel

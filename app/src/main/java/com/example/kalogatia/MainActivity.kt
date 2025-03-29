@@ -1,6 +1,5 @@
 package com.example.kalogatia
 
-import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,7 +23,7 @@ import com.example.kalogatia.data.entities.User
 import com.example.kalogatia.data.entities.Workout
 import com.example.kalogatia.data.entities.Set
 import com.example.kalogatia.data.entities.WorkoutPlanning
-import com.example.kalogatia.ui.handleNavigation
+import com.example.kalogatia.ui.components.handleNavigation
 import com.example.kalogatia.ui.screens.AddExerciseScreen
 import com.example.kalogatia.ui.screens.AddWorkoutScreen
 import com.example.kalogatia.ui.screens.GraphScreen

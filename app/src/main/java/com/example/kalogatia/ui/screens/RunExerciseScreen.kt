@@ -63,15 +63,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.kalogatia.data.entities.Exercise
 import com.example.kalogatia.data.entities.Set
-import com.example.kalogatia.ui.Buttons.DoneButton
-import com.example.kalogatia.ui.Buttons.RemoveButton
-import com.example.kalogatia.ui.NavigationLayout
-import com.example.kalogatia.ui.NotFound
+import com.example.kalogatia.ui.components.NavigationLayout
+import com.example.kalogatia.ui.components.NotFound
 import com.example.kalogatia.ui.theme.AppColorScheme
-import com.example.kalogatia.viewmodels.AddExerciseScreenViewModel
 import com.example.kalogatia.viewmodels.RunExerciseViewModel
 import com.example.kalogatia.viewmodels.SharedViewModel
-import androidx.compose.runtime.key
 
 @Composable
 fun RunExerciseScreen(

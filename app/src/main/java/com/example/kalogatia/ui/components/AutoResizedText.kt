@@ -1,4 +1,4 @@
-package com.example.kalogatia.ui
+package com.example.kalogatia.ui.components
 
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.Text

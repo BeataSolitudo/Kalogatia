@@ -50,8 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.kalogatia.DataStoreManager
-import com.example.kalogatia.ui.Divider
-import com.example.kalogatia.ui.NavigationLayout
+import com.example.kalogatia.ui.components.Divider
+import com.example.kalogatia.ui.components.NavigationLayout
 import com.example.kalogatia.ui.theme.AppColorScheme
 import com.example.kalogatia.viewmodels.SharedViewModel
 import kotlinx.coroutines.launch

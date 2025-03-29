@@ -31,4 +31,7 @@ interface WorkoutPlanningDao {
 
     @Query("DELETE FROM workoutplanning WHERE workoutId = :workoutId AND weekDay = :weekDay")
     suspend fun deleteWorkoutPlanning(workoutId: Int, weekDay: Int)
+
+    @Query("DELETE FROM workoutplanning WHERE workoutId = :workoutId")
+    suspend fun deleteWorkoutPlanning(workoutId: Int)
 }

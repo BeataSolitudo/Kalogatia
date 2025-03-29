@@ -14,14 +14,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -36,10 +46,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.kalogatia.data.entities.Workout
 import com.example.kalogatia.data.relations.WorkoutWithWorkoutPlanning
-import com.example.kalogatia.ui.AutoResizedText
-import com.example.kalogatia.ui.Divider
-import com.example.kalogatia.ui.NavigationLayout
-import com.example.kalogatia.ui.NotFound
+import com.example.kalogatia.ui.components.AutoResizedText
+import com.example.kalogatia.ui.components.Divider
+import com.example.kalogatia.ui.components.NavigationLayout
+import com.example.kalogatia.ui.components.NotFound
 import com.example.kalogatia.ui.theme.AppColorScheme
 import com.example.kalogatia.viewmodels.MainScreenViewModel
 import com.example.kalogatia.viewmodels.SharedViewModel
@@ -83,8 +93,11 @@ fun Workout(
     workout: Workout,
     workoutDay: String,
     onWorkoutClick: (Int) -> Unit,
-    theme: AppColorScheme
+    theme: AppColorScheme,
+    viewModel: MainScreenViewModel
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth(0.9f)
@@ -119,7 +132,7 @@ fun Workout(
             }
             Box(
                 modifier = Modifier
-                    .weight(0.3f),
+                    .weight(0.2f),
                 contentAlignment = Alignment.TopEnd
             ) {
                 Text(
@@ -128,6 +141,30 @@ fun Workout(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
+            }
+            Box(
+                modifier = Modifier
+                    .weight(0.1f)
+                    .clickable { expanded = true },
+                contentAlignment = Alignment.TopEnd
+            ) {
+                Icon(Icons.Filled.MoreVert, "Remove workout", tint = theme.textColor)
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .width(70.dp)
+                        .height(40.dp)
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(text = "Delete") },
+                        onClick = {
+                            expanded = false
+                            workout.workoutId?.let { viewModel.cascadeDeleteWorkout(it) }
+                        },
+                        modifier = Modifier.height(25.dp)
+                    )
+                }
             }
         }
     }
@@ -207,7 +244,8 @@ fun MainScreenContent(
                         workout = workoutWithPlanning.workout,
                         workoutDay = dayName,
                         onWorkoutClick = { navController.navigate("addWorkoutScreen/${workoutWithPlanning.workout.workoutId}") },
-                        theme
+                        theme,
+                        viewModel
                     )
                 }
             }
@@ -219,7 +257,8 @@ fun MainScreenContent(
                         workout = workout,
                         workoutDay = "",
                         onWorkoutClick = { navController.navigate("addWorkoutScreen/${workout.workoutId}") },
-                        theme
+                        theme,
+                        viewModel
                     )
                 }
             }

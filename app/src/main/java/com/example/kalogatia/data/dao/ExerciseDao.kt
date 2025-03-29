@@ -42,4 +42,10 @@ interface ExerciseDao {
 
     @Query("UPDATE exercise SET restTime = :restTime WHERE exerciseId = :exerciseId")
     suspend fun updateRestTime(exerciseId: Int, restTime: Int)
+
+    @Query("DELETE FROM exercise WHERE workoutId = :workoutId")
+    suspend fun deleteExercise(workoutId: Int)
+
+    @Query("SELECT exerciseId FROM exercise WHERE workoutId = :workoutId")
+    fun fetchExerciseIds(workoutId: Int): Flow<List<Int>>
 }

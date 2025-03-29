@@ -1,4 +1,4 @@
-package com.example.kalogatia.ui
+package com.example.kalogatia.ui.components
 
 import android.annotation.SuppressLint
 import androidx.annotation.DrawableRes
