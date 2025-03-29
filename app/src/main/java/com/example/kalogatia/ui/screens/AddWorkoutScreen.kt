@@ -60,7 +60,6 @@ import com.example.kalogatia.ui.theme.AppColorScheme
 import com.example.kalogatia.viewmodels.AddWorkoutScreenViewModel
 import com.example.kalogatia.viewmodels.SharedViewModel
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddWorkoutScreen(
     navController: NavController,
@@ -68,9 +67,12 @@ fun AddWorkoutScreen(
     workoutId: Int?,
     sharedViewModel: SharedViewModel
 ) {
-    val viewModel: AddWorkoutScreenViewModel = viewModel(factory = AddWorkoutScreenViewModel.provideFactory(workoutId))
+    var localWorkoutId by remember { mutableStateOf(workoutId) }
+    val viewModel: AddWorkoutScreenViewModel = viewModel(factory = AddWorkoutScreenViewModel.provideFactory(localWorkoutId))
     val exercisesWithType by viewModel.exercisesWithType.collectAsState()
     val theme by sharedViewModel.currentTheme.collectAsState()
+    val newWorkoutId by viewModel.newWorkoutId.collectAsState(initial = null)
+
 
     LaunchedEffect(navController) {
         navController.currentBackStackEntryFlow.collect { backStackEntry ->
@@ -80,16 +82,22 @@ fun AddWorkoutScreen(
         }
     }
 
+    LaunchedEffect(newWorkoutId) {
+        if (newWorkoutId != null) {
+            localWorkoutId = newWorkoutId
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(theme.backgroundColor)
             .windowInsetsPadding(WindowInsets.systemBars),
     ) {
-        TopBarAddWorkoutScreen(modifier = Modifier.weight(0.15f), viewModel, workoutId, sharedViewModel, theme, navController)
+        TopBarAddWorkoutScreen(modifier = Modifier.weight(0.15f), viewModel, localWorkoutId, sharedViewModel, theme, navController)
         Divider(modifier = Modifier.background(theme.dividerColor))
-        AddWorkoutScreenContent(modifier = Modifier.weight(0.75f), exercisesWithType, viewModel, navController, theme, workoutId)
-        NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate, theme, workoutId)
+        AddWorkoutScreenContent(modifier = Modifier.weight(0.75f), exercisesWithType, viewModel, navController, theme, localWorkoutId)
+        NavigationLayout(modifier = Modifier.weight(0.10f), navController, onNavigate, theme, localWorkoutId)
     }
 }
 
@@ -409,6 +417,7 @@ fun AddWorkoutScreenContent(
                 containerColor = theme.borderColorGradient2,
                 modifier = Modifier.padding(bottom = 15.dp, end = 15.dp)
             ) {
+                println("In floating button workoutId:" + workoutId)
                 Icon(Icons.Filled.Add, "Add Exercise", tint = theme.textColor)
             }
         }

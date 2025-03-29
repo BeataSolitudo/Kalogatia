@@ -11,6 +11,7 @@ import com.example.kalogatia.data.dao.SetDao
 import com.example.kalogatia.data.dao.WorkoutDao
 import com.example.kalogatia.data.database.DatabaseKalogatia
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -74,16 +75,19 @@ class AddWorkoutScreenViewModel(
 
     fun fetchWorkoutName(workoutId: Int) {
         viewModelScope.launch {
-            val name = withContext(Dispatchers.IO) { // ✅ Run database query on a background thread
+            val name = withContext(Dispatchers.IO) {
                 workoutDao.getWorkoutName(workoutId) ?: "Workout Name Not Found"
             }
             _workoutName.value = name
         }
     }
 
+    private var _newWorkoutId = MutableStateFlow<Int?>(null)
+    var newWorkoutId: Flow<Int?> = _newWorkoutId
+
     fun insertWorkout(workoutName: String, userId: Int) {
         viewModelScope.launch {
-            workoutDao.insertWorkout(workoutName, userId)
+            _newWorkoutId.value = workoutDao.insertWorkout(workoutName, userId).toInt()
         }
     }
 

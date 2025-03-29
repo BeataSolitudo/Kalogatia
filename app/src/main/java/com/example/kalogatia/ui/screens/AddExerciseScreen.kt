@@ -69,7 +69,6 @@ import com.example.kalogatia.ui.theme.AppColorScheme
 import com.example.kalogatia.viewmodels.AddExerciseScreenViewModel
 import com.example.kalogatia.viewmodels.SharedViewModel
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddExerciseScreen(
     navController: NavController,
@@ -140,6 +139,7 @@ fun TopBarAddExerciseScreen(modifier: Modifier, theme: AppColorScheme, viewModel
 @SuppressLint("SuspiciousIndentation")
 @Composable
 fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel, exerciseId: Int?, theme: AppColorScheme, workoutId: Int?, navController: NavController) {
+//    var localExerciseId by remember { mutableStateOf(exerciseId) }
     var name by remember { mutableStateOf("") }
     var tmpName by remember { mutableStateOf("") }
     var restTime by remember { mutableStateOf("") }
@@ -158,6 +158,13 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
         1 to "Mon", 2 to "Tue", 3 to "Wed", 4 to "Thu",
         5 to "Fri", 6 to "Sat", 7 to "Sun"
     )
+//    val newExerciseId by viewModel.newExerciseId.collectAsState(initial = null)
+//
+//    LaunchedEffect(newExerciseId) {
+//        if (newExerciseId != null) {
+//            localExerciseId = newExerciseId
+//        }
+//    }
 
     LaunchedEffect(exerciseId) {
         if (exerciseId != null) {
@@ -417,6 +424,7 @@ fun WorkoutSets(fetchedSets: List<Set>?, theme: AppColorScheme, viewModel: AddEx
     val clicked by viewModel.click.collectAsState()
     var tmpSetList = remember { mutableStateListOf<SetData>() }
     var removedSets = remember { mutableStateListOf<Int>() }
+    val newExerciseId by viewModel.newExerciseId.collectAsState(initial = exerciseId)
 
     LaunchedEffect(fetchedSets) {
         if (!fetchedSets.isNullOrEmpty()) {
@@ -434,21 +442,16 @@ fun WorkoutSets(fetchedSets: List<Set>?, theme: AppColorScheme, viewModel: AddEx
     }
 
     LaunchedEffect(clicked) {
-        if(clicked) {
+        if (clicked) {
             viewModel.setClicked(false)
+
             // Remove set
             if (!removedSets.isEmpty()) {
                 println("Sets removed")
                 viewModel.deleteSets(removedSets)
                 navController.navigate("addWorkoutScreen/${workoutId}")
             }
-            // Insert Set if id = null
-            tmpSetList.forEach { setData ->
-                if (setData.id == null && exerciseId != null) {
-                    println("Inserted Set")
-                    viewModel.insertSet(setData.position, setData.weight, setData.reps, exerciseId)
-                }
-            }
+            println("i CLicked")
             // Update sets
             tmpSetList.forEach { setData ->
                 if (setData.id != null) {
@@ -462,6 +465,30 @@ fun WorkoutSets(fetchedSets: List<Set>?, theme: AppColorScheme, viewModel: AddEx
                 }
             }
 
+            tmpSetList.forEach { setData ->
+                if (setData.id == null && exerciseId != null) {
+                    println("Inserted Set")
+                    viewModel.insertSet(setData.position, setData.weight, setData.reps, exerciseId)
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(newExerciseId) {
+        if(newExerciseId != null || clicked) {
+            viewModel.setClicked(false)
+
+            // Insert Set if id = null
+            tmpSetList.forEach { setData ->
+                if (setData.id == null && newExerciseId != null) {
+                    println("Inserted Set")
+                    newExerciseId?.let {
+                        viewModel.insertSet(setData.position, setData.weight, setData.reps,
+                            it
+                        )
+                    }
+                }
+            }
         }
     }
 

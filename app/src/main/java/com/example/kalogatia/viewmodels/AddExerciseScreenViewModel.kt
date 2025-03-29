@@ -16,6 +16,7 @@ import com.example.kalogatia.data.database.DatabaseKalogatia
 import com.example.kalogatia.data.entities.Exercise
 import com.example.kalogatia.data.entities.Set
 import com.example.kalogatia.data.entities.WorkoutPlanning
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -94,9 +95,12 @@ class AddExerciseScreenViewModel(
         }
     }
 
+    private var _newExerciseId = MutableStateFlow<Int?>(null)
+    val newExerciseId: Flow<Int?> = _newExerciseId
+
     fun insertExercise(exerciseTypeId: Int, restTime: Int, workoutId: Int) {
         viewModelScope.launch {
-            exerciseDao.insertExercise(exerciseTypeId, restTime, workoutId)
+            _newExerciseId.value = exerciseDao.insertExercise(exerciseTypeId, restTime, workoutId).toInt()
         }
     }
 

@@ -95,46 +95,6 @@ class SharedViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    private val _fetchedWorkout = MutableStateFlow<Workout?>(null)
-    val fetchedWorkout: StateFlow<Workout?> = _fetchedWorkout
-
-    private var _selectedWorkoutId = MutableStateFlow<Int?>(null)
-    val selectedWorkoutId: StateFlow<Int?> = _selectedWorkoutId
-
-    private val _bottomSheetVisible = MutableStateFlow<Boolean>(false)
-    val bottomSheetVisible: StateFlow<Boolean> = _bottomSheetVisible
-
-    fun showBottomSheet(workoutId: Int) {
-        _bottomSheetVisible.value = true
-        _selectedWorkoutId.value = workoutId
-        println("SharedViewModel shownBottomSheet")
-    }
-
-    fun hideBottomSheet() {
-        _bottomSheetVisible.value = false
-        _selectedWorkoutId.value = null
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -172,14 +132,6 @@ class SharedViewModel(application: Application): AndroidViewModel(application) {
     private var _set = MutableLiveData<List<Set>>(null)
     val set: LiveData<List<Set>> = _set
 
-    fun saveUserId(userId: Int) {
-        _userId.value = userId
-    }
-
-    fun saveWorkoutId(workoutId: Int) {
-        _workoutId.value = workoutId
-    }
-
     fun saveWorkoutName(workoutName: String) {
         _workoutName.value = workoutName
     }
@@ -188,27 +140,4 @@ class SharedViewModel(application: Application): AndroidViewModel(application) {
         _tmpWorkoutName.value = tmpWorkoutName
     }
 
-    fun saveExerciseId(exerciseId: Int) {   // Its not list because we are storing only one exercise at a time, we might map it later
-        val currentList = _exerciseId.value.orEmpty().toMutableList()
-        currentList.add(exerciseId)
-        _exerciseId.value = currentList
-    }
-
-    fun saveRestTime(restTime: Double) {
-        val currentList = _restTime.value.orEmpty().toMutableList()
-        currentList.add(restTime)
-        _restTime.value = currentList
-    }
-
-    fun saveExerciseTypeName(exerciseTypeName: String) {
-        val currentList = _exerciseTypeName.value.orEmpty().toMutableList()
-        currentList.add(exerciseTypeName)
-        _exerciseTypeName.value = currentList
-    }
-
-    fun saveSet(set: Set) {
-        val currentList = _set.value.orEmpty().toMutableList()
-        currentList.add(set)
-        _set.value = currentList
-    }
 }

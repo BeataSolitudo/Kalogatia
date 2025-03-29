@@ -35,7 +35,7 @@ interface ExerciseDao {
     fun fetchExercisesByWorkoutId(workoutId: Int): Flow<List<Exercise>>
 
     @Query("INSERT INTO exercise (exerciseTypeId, restTime, workoutId) VALUES (:exerciseTypeId, :restTime, :workoutId)")
-    suspend fun insertExercise(exerciseTypeId: Int, restTime: Int, workoutId: Int)
+    suspend fun insertExercise(exerciseTypeId: Int, restTime: Int, workoutId: Int): Long
 
     @Query("SELECT * FROM exercise WHERE exerciseId = :exerciseId")
     suspend fun fetchExercise(exerciseId: Int): Exercise
