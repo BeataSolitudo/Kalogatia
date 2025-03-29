@@ -93,6 +93,15 @@ class AddWorkoutScreenViewModel(
         }
     }
 
+    fun cascadeDeleteExercise(exerciseId: Int) {
+        viewModelScope.launch {
+            setDao.deleteSetByExerciseId(exerciseId)
+            exerciseDao.deleteExerciseByExerciseId(exerciseId)
+            workoutId?.let { fetchExercisesForWorkout(it) }
+        }
+    }
+
+
     // ViewModel Factory (Companion Object)
     companion object {
         fun provideFactory(workoutId: Int?): ViewModelProvider.Factory {

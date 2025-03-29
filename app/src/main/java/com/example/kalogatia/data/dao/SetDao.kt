@@ -56,4 +56,6 @@ interface SetDao {
     @Query("DELETE FROM `set` WHERE exerciseId IN (:exerciseIds)")
     suspend fun deleteSetsByExerciseIds(exerciseIds: List<Int>)
 
+    @Query("DELETE FROM `set` WHERE exerciseId = :exerciseId")
+    suspend fun deleteSetByExerciseId(exerciseId: Int)
 }

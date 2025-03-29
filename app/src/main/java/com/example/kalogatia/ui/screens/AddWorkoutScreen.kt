@@ -15,13 +15,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -109,6 +113,7 @@ fun Exercise(
     val maxWeights by viewModel.maxWeights.collectAsState()
     val maxWeight = maxWeights[exerciseWithType.exercise.exerciseId] ?: 0.0
 
+    var expanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -183,6 +188,31 @@ fun Exercise(
                     Text(text = "Sets", color = theme.textColor)
                 }
 
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(0.07f)
+                    .clickable { expanded = true },
+                contentAlignment = Alignment.TopEnd
+            ) {
+                Icon(Icons.Filled.MoreVert, "Remove workout", tint = theme.textColor)
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .width(70.dp)
+                        .height(40.dp)
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(text = "Delete") },
+                        onClick = {
+                            expanded = false
+                            exerciseWithType.exercise.exerciseId?.let { viewModel.cascadeDeleteExercise(it) }
+                        },
+                        modifier = Modifier.height(25.dp)
+                    )
+                }
             }
         }
     }

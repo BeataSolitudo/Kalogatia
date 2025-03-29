@@ -48,4 +48,7 @@ interface ExerciseDao {
 
     @Query("SELECT exerciseId FROM exercise WHERE workoutId = :workoutId")
     fun fetchExerciseIds(workoutId: Int): Flow<List<Int>>
+
+    @Query("DELETE FROM exercise WHERE exerciseId = :exerciseId")
+    suspend fun deleteExerciseByExerciseId(exerciseId: Int)
 }
