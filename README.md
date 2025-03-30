@@ -8,6 +8,8 @@ If you are having trouble starting, don't worry. This guide will guide you thru 
 At the bottom of the screen you can see navigation. You have different options like for example notebook for writing names of felow gym bros (or more boring stuff like technique), settings for setting themes, graph for tracking progress or the one you are insterested in the most now, creating workout.
 Creating workout is the big plus in the middle of navigation. Click it and type name of your workout then press enter.
 
+ ![mainScreen](/images/modifiedMainScreen.png)
+
 ## 2. Creating exercise & Sets
 Now you are in screen with exercises, here you can start your workout or edit your exercises and sets, now you probably don't have any, let's change that!
 Click plus button in the right bottom corner of the screen, right above navigation. This button will open "Add Exercise" screen.
