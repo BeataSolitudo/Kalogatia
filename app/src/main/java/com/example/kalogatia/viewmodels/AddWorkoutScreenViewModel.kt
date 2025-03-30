@@ -30,7 +30,6 @@ class AddWorkoutScreenViewModel(
         workoutId?.let { fetchExercisesForWorkout(it) }
         workoutId?.let { countSetsByExerciseId(it) }
         workoutId?.let { fetchMaxWeight(it) }
-        //workoutId?.let { fetchWorkoutName(it) }
     }
 
     private val _exercisesWithType = MutableStateFlow<List<ExerciseWithType>>(emptyList())
@@ -63,15 +62,8 @@ class AddWorkoutScreenViewModel(
         }
     }
 
-    private val _workoutName = MutableStateFlow("Loading...") // Default value
+    private val _workoutName = MutableStateFlow("Loading...")
     val workoutName: StateFlow<String> = _workoutName.asStateFlow()
-/*
-    fun fetchWorkoutName(workoutId: Int) {
-        viewModelScope.launch {
-            val name = workoutDao.getWorkoutName(workoutId) ?: "Workout Name Not Found"
-            _workoutName.value = name
-        }
-    }*/
 
     fun fetchWorkoutName(workoutId: Int) {
         viewModelScope.launch {

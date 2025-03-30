@@ -1,7 +1,5 @@
 package com.example.kalogatia.viewmodels
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -22,7 +20,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-@RequiresApi(Build.VERSION_CODES.O)
 class MainScreenViewModel(
     private val workoutDao: WorkoutDao,
     private val workoutWithWorkoutPlanningDao: WorkoutWithWorkoutPlanningDao,

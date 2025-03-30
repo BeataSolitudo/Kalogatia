@@ -109,7 +109,7 @@ fun GraphScreenContent(modifier: Modifier, theme: AppColorScheme, viewModel: Gra
 
         val noData: List<Point> = listOf(
             Point(0f, 0f),
-            Point(1f, 445f),
+            Point(0f, 0f),
         )
 
         var pointsData by remember { mutableStateOf(noData) }
@@ -140,7 +140,7 @@ fun GraphScreenContent(modifier: Modifier, theme: AppColorScheme, viewModel: Gra
                     .axisStepSize(100.dp)
                     .backgroundColor(Color.Transparent)
                     .steps(pointsData.size - 1)
-                    .labelData { i -> if (sets.size > i) (sets[i].week_of_year + " - " + sets[i].year) else "anlaky"}
+                    .labelData { i -> if (sets.size > i) (sets[i].week_of_year + " - " + sets[i].year) else ""}
                     .labelAndAxisLinePadding(15.dp)
                     .axisLineColor(theme.selectedNavigationItemColor)
                     .axisLabelColor(theme.selectedNavigationItemColor)

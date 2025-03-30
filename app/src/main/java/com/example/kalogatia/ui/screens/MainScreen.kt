@@ -1,7 +1,5 @@
 package com.example.kalogatia.ui.screens
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -54,7 +51,6 @@ import com.example.kalogatia.ui.theme.AppColorScheme
 import com.example.kalogatia.viewmodels.MainScreenViewModel
 import com.example.kalogatia.viewmodels.SharedViewModel
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainScreen(
     navController: NavController,
@@ -170,7 +166,6 @@ fun Workout(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TopBarMainScreen(modifier: Modifier, workoutName: String, theme: AppColorScheme) {
     val screenHeight = LocalConfiguration.current.screenHeightDp
@@ -251,7 +246,7 @@ fun MainScreenContent(
             }
 
             // Display incomplete workouts after sorted ones
-            if (!incompleteWorkouts.isEmpty()) {
+            if (incompleteWorkouts.isNotEmpty()) {
                 incompleteWorkouts.forEach { workout ->
                     Workout(
                         workout = workout,
