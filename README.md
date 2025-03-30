@@ -8,13 +8,21 @@ If you are having trouble starting, don't worry. This guide will guide you thru 
 At the bottom of the screen you can see navigation. You have different options like for example notebook for writing names of felow gym bros (or more boring stuff like technique), settings for setting themes, graph for tracking progress or the one you are insterested in the most now, creating workout.
 Creating workout is the big plus in the middle of navigation. Click it and type name of your workout then press enter.
 
- ![mainScreen](/images/modifiedMainScreen.png)
+<div style="display: flex; justify-content: center;">
+    <img src="/images/modifiedMainScreen.png" alt="mainScreen" width="300"/>
+    <img src="/images/modifiedTypingWorkoutName.png" alt="typingWorkoutName" width="300"/>
+</div>
 
 ## 2. Creating exercise & Sets
 Now you are in screen with exercises, here you can start your workout or edit your exercises and sets, now you probably don't have any, let's change that!
 Click plus button in the right bottom corner of the screen, right above navigation. This button will open "Add Exercise" screen.
 Here you can type all you need, name, rest time, the day you have workout planned for or add sets. If you are happy with the result click green done button at the top right of the screen. This button will save your changes.
 Congratulation you have just learned how to use Kalogatia app, simple, isn't it? :D
+
+<div style="display: flex; justify-content: center;">
+    <img src="/images/modifiedClickAdd.png" alt="mainScreen" width="300"/>
+    <img src="/images/modifiedAddExerciseScreen.png" alt="typingWorkoutName" width="300"/>
+</div>
 
 ## 3. Others
 - Graph -> If you want to see your progress type name of your exercise, click dropdown and select, then you can select what period.
