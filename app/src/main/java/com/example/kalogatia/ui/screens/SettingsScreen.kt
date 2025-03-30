@@ -1,6 +1,8 @@
 package com.example.kalogatia.ui.screens
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,10 +23,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Accessibility
 import androidx.compose.material.icons.rounded.AdUnits
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Create
 import androidx.compose.material.icons.rounded.Mail
+import androidx.compose.material.icons.rounded.PhoneIphone
 import androidx.compose.material.icons.rounded.QuestionMark
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -98,6 +102,7 @@ fun SettingsScreenContent(modifier: Modifier, theme: AppColorScheme) {
     var emailDialog = remember { mutableStateOf(false) }
     var aboutDialog = remember { mutableStateOf(false) }
     var selectedColor = remember { mutableStateOf("") }
+    var githubDialog = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         DataStoreManager.getTheme(context).collect { theme ->
@@ -110,6 +115,37 @@ fun SettingsScreenContent(modifier: Modifier, theme: AppColorScheme) {
     }
     if (aboutDialog.value) {
         myAlertDialog(dialogTitle = "About", dialogText = "Kalogatia was my first project, created to help me and my friends track our progress more efficiently. Many apps offered either an amazing UI or great functionality, but unfortunately, not both. If an app had a great UI, it was often overwhelming, cluttered with distractions, and difficult to navigate. On the other hand, apps with excellent functionality often lacked a polished user interface. That's where Kalogatia comes in combining the best of both worlds!", icon = Icons.Rounded.AdUnits, onDismissRequest =  { aboutDialog.value = false })
+    }
+
+    if (githubDialog.value) {
+        AlertDialog(
+            icon = {
+                Icon(Icons.Rounded.QuestionMark, contentDescription = "GitHub Icon")
+            },
+            title = {
+                Text(text = "Get Help")
+            },
+            text = {
+                Text(
+                    text = "Visit our GitHub repository for more information.",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().clickable {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/BeataSolitudo/Kalogatia"))
+                        context.startActivity(intent)
+                    },
+                    color = Color.Blue
+                )
+            },
+            onDismissRequest = {
+                githubDialog.value = false
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { githubDialog.value = false }) {
+                    Text("Close")
+                }
+            }
+        )
     }
 
     Box(
@@ -157,7 +193,7 @@ fun SettingsScreenContent(modifier: Modifier, theme: AppColorScheme) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.QuestionMark,
+                    imageVector = Icons.Rounded.PhoneIphone,
                     contentDescription = "writeIcon",
                     tint = theme.iconColor,
                     modifier = Modifier
@@ -263,6 +299,33 @@ fun SettingsScreenContent(modifier: Modifier, theme: AppColorScheme) {
                         Text(text = "Colourful", color = theme.textColor, fontSize = themeFontSize)
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(spacerDp))
+
+            Text(text = "Having trouble", color = theme.textColor, fontSize = 23.sp)
+            myDivider(modifier = Modifier.fillMaxWidth(1f))
+            Row(
+                modifier = Modifier.clickable { githubDialog.value = true },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.QuestionMark,
+                    contentDescription = "questionMarkIcon",
+                    tint = theme.iconColor,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .padding(end = 5.dp)
+                )
+                Text(text = "Get help", color = theme.textColor, fontSize = 20.sp, modifier = Modifier.weight(1f))
+                Icon(
+                    imageVector = Icons.Rounded.ChevronRight,
+                    contentDescription = "chevronRightIcon",
+                    tint = theme.textColor,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .padding(end = 5.dp)
+                )
             }
         }
     }
