@@ -9,6 +9,7 @@ import com.example.kalogatia.data.dao.ExerciseTypeWithExerciseDao
 import com.example.kalogatia.data.dao.ExerciseWithType
 import com.example.kalogatia.data.dao.SetDao
 import com.example.kalogatia.data.dao.WorkoutDao
+import com.example.kalogatia.data.dao.WorkoutPlanningDao
 import com.example.kalogatia.data.database.DatabaseKalogatia
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -24,7 +25,8 @@ class AddWorkoutScreenViewModel(
     private val exerciseTypeWithExerciseDao: ExerciseTypeWithExerciseDao,
     private val setDao: SetDao,
     private val workoutId: Int?,
-    private val workoutDao: WorkoutDao
+    private val workoutDao: WorkoutDao,
+    private val workoutPlanningDao: WorkoutPlanningDao
 ) : ViewModel() {
     init {
         workoutId?.let { fetchExercisesForWorkout(it) }
@@ -97,6 +99,37 @@ class AddWorkoutScreenViewModel(
         }
     }
 
+    private val _workoutDays = MutableStateFlow<List<Int>?>(emptyList())
+    val workoutDays: StateFlow<List<Int>?> = _workoutDays
+
+    fun fetchWorkoutDays(workoutId: Int) {
+        viewModelScope.launch {
+            workoutPlanningDao.fetchWorkoutDays(workoutId)
+                .collect { days ->
+                    _workoutDays.value = days
+                }
+        }
+    }
+
+    fun deleteWorkoutDays(workoutId: Int, workoutDays: List<Int>) {
+        viewModelScope.launch {
+            if (!workoutDays.isEmpty()) {
+                workoutPlanningDao.deleteWorkoutPlanning(workoutId, workoutDays)
+            }
+        }
+    }
+
+    fun insertWorkoutDays(workoutId: Int, workoutDays: List<Int>) {
+        viewModelScope.launch {
+            if (workoutDays.isNotEmpty()) {
+                for (weekDay in workoutDays) {
+                    workoutPlanningDao.insertWorkoutPlanning(workoutId, 1, weekDay)
+                }
+            }
+        }
+    }
+
+
 
     // ViewModel Factory (Companion Object)
     companion object {
@@ -111,7 +144,8 @@ class AddWorkoutScreenViewModel(
                         dbInstance.exerciseTypeWithExerciseDao,
                         dbInstance.setDao,
                         workoutId,
-                        dbInstance.workoutDao
+                        dbInstance.workoutDao,
+                        dbInstance.workoutPlanningDao
                     ) as T
                 }
             }

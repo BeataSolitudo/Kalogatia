@@ -277,22 +277,38 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
-        Text(text = "Exercise name", color = theme.textColor, fontSize = 20.sp, modifier = Modifier.padding(start = 20.dp))
-        MyTextField(value = name, onValueChange = { name = it }, placeholderText = "Type exercise name", theme, emptyName)
-        Spacer(modifier = Modifier.height(12.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(modifier = Modifier.weight(0.5f)) {
-                val regex = "^[1-9][0-9]*$".toRegex()   // Only whole positive numbers
+            // Exercise Name (70% width)
+            Box(modifier = Modifier.weight(0.7f)) {
+                Column {
+                    Text(
+                        text = "Exercise name",
+                        color = theme.textColor,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(start = 20.dp)
+                    )
+                    MyTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        placeholderText = "Type exercise name",
+                        theme,
+                        emptyName
+                    )
+                }
+            }
 
+            // Rest Time (30% width)
+            Box(modifier = Modifier.weight(0.3f)) {
+                val regex = "^[1-9][0-9]*$".toRegex()  // Only whole positive numbers
                 Column {
                     Text(
                         text = "Rest time",
                         color = theme.textColor,
                         fontSize = 20.sp,
-                        modifier = Modifier.padding(start = 20.dp)
+                        modifier = Modifier.padding(start = 10.dp) // Adjusted padding for alignment
                     )
                     MyTextField(
                         value = restTime,
@@ -308,45 +324,20 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
                     )
                 }
             }
-            Box(modifier = Modifier.weight(0.5f)) {
-                Column {
-                    Text(
-                        text = "Workout day",
-                        color = theme.textColor,
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(start = 20.dp)
-                    )
-                    MyTextField(
-                        value = day,
-                        onValueChange = { day = it },
-                        placeholderText = "Workout Day",
-                        theme,
-                        false,
-                        focusable = false,
-                        modifier = Modifier.clickable { expanded = !expanded }
-                    )
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        weekDays.forEach { (_, option) ->
-                            DropdownMenuItem(
-                                text = { Text(option) },
-                                onClick = {
-                                    day = option
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
-        Text(text = "Sets", color = theme.textColor, fontSize = 20.sp, modifier = Modifier.padding(start = 20.dp))
+
+        Text(
+            text = "Sets",
+            color = theme.textColor,
+            fontSize = 20.sp,
+            modifier = Modifier.padding(start = 20.dp)
+        )
+
         WorkoutSets(fetchedSets, theme, viewModel, navController, workoutId, exerciseId)
     }
+
 }
 
 @Composable

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
@@ -36,6 +37,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,6 +61,7 @@ import com.example.kalogatia.ui.components.NotFound
 import com.example.kalogatia.ui.theme.AppColorScheme
 import com.example.kalogatia.viewmodels.AddWorkoutScreenViewModel
 import com.example.kalogatia.viewmodels.SharedViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun AddWorkoutScreen(
@@ -231,21 +234,22 @@ fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewMo
     val openDialog = remember { mutableStateOf(false) }
     var workoutName by remember { mutableStateOf("Type workout name") }
     val fetchedWorkoutName by viewModel.workoutName.collectAsState()
+    val fetchedWorkoutDays by viewModel.workoutDays.collectAsState()
 
     sharedViewModel.saveWorkoutName(workoutName)
 
-    // Fetch workout name only if workoutId is not null
     LaunchedEffect(workoutId) {
         if (workoutId != null) {
             viewModel.fetchWorkoutName(workoutId)
+            viewModel.fetchWorkoutDays(workoutId)
         } else {
             workoutName = "Type workout name"
             openDialog.value = true
         }
     }
 
-    // Update workout name when fetchedWorkoutName changes
     LaunchedEffect(fetchedWorkoutName) {
+        println("Change in name")
         if (workoutId != null && fetchedWorkoutName.isNotEmpty()) {
             workoutName = fetchedWorkoutName
         }
@@ -268,7 +272,7 @@ fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewMo
                 Column {
                     Text(text = "Exercises", fontSize = 40.sp, fontWeight = FontWeight(weight = 800), color = theme.textColor)
                     Text(
-                        text = sharedViewModel.tmpWorkoutName.value?:workoutName,
+                        text = sharedViewModel.tmpWorkoutName.value ?: workoutName,
                         color = theme.textColor,
                         modifier = Modifier.clickable {
                             openDialog.value = true
@@ -292,34 +296,81 @@ fun TopBarAddWorkoutScreen(modifier: Modifier, viewModel: AddWorkoutScreenViewMo
         DialogWithInput(
             onDismissRequest = {
                 openDialog.value = false
-                if(workoutId == null) navController.navigate("mainScreen/") },
-            onConfirmation = { newWorkoutName ->
+                if (workoutId == null) navController.navigate("mainScreen/")
+            },
+            onConfirmation = { newWorkoutName, selectedDays ->
                 sharedViewModel.saveTmpWorkoutName(newWorkoutName)
                 openDialog.value = false
+
+                val fetchedDays = fetchedWorkoutDays ?: emptyList()
+                val addedDays = selectedDays - fetchedDays.toSet()
+                val removedDays = fetchedDays.toSet() - selectedDays.toSet()
+
+                if (addedDays.isNotEmpty() || removedDays.isNotEmpty() && workoutId != null) {
+                    workoutId?.let { viewModel.insertWorkoutDays(it, addedDays) }
+                    workoutId?.let { viewModel.deleteWorkoutDays(it, removedDays.toList()) }
+                } else {
+                    println("No changes in workout days")
+                }
+
                 if (workoutId != null) {
                     viewModel.updateWorkout(workoutId, newWorkoutName, 1)
+                    workoutName = newWorkoutName
                 } else {
                     viewModel.insertWorkout(newWorkoutName, 1)
                     println("Insert Successful")
                 }
-            }
+            },
+            fetchedWorkoutDays = fetchedWorkoutDays ?: emptyList(),
+            workoutName = workoutName,
+            workoutId
         )
     }
+
 }
 
 @Composable
 fun DialogWithInput(
     onDismissRequest: () -> Unit,
-    onConfirmation: (String) -> Unit
+    onConfirmation: (String, List<Int>) -> Unit,
+    fetchedWorkoutDays: List<Int>,
+    workoutName: String,
+    workoutId: Int?
 ) {
-    var textFieldValue by remember { mutableStateOf("") }
-    val isInputValid = textFieldValue.isNotBlank()
+    // Directly initialize textFieldValue with workoutName
+    var textFieldValue by remember { mutableStateOf(workoutName) }
+
+    val dayToNumber = mapOf(
+        "Monday" to 1,
+        "Tuesday" to 2,
+        "Wednesday" to 3,
+        "Thursday" to 4,
+        "Friday" to 5,
+        "Saturday" to 6,
+        "Sunday" to 7
+    )
+
+    val days = dayToNumber.keys.toList()
+
+    // Initialize checkboxes based on fetchedWorkoutDays
+    val checkedDays = remember {
+        days.associateWith { mutableStateOf(fetchedWorkoutDays.contains(dayToNumber[it])) }
+    }
+
+    // Track whether any changes have been made
+    val hasChanges by remember {
+        derivedStateOf {
+            val selectedDays = checkedDays.filter { it.value.value }
+                .keys.mapNotNull { dayToNumber[it] }
+            (textFieldValue.isNotBlank() && textFieldValue != workoutName) ||
+                    (selectedDays.toSet() != fetchedWorkoutDays.toSet())
+        }
+    }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp)
         ) {
@@ -330,13 +381,13 @@ fun DialogWithInput(
                 Text(
                     text = "Enter Workout Name",
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(start = 15.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
 
                 TextField(
                     value = textFieldValue,
                     onValueChange = { textFieldValue = it },
-                    placeholder = { Text("Workout Name") },
+                    placeholder = { Text(workoutName) }, // Use workoutName as placeholder
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
@@ -344,6 +395,30 @@ fun DialogWithInput(
                         focusedContainerColor = Color.Transparent
                     )
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Conditionally show the days checkboxes only if workoutId is not null
+                if (workoutId != null) {
+                    Text(
+                        text = "Select workout days",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    days.forEach { day ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Text(day, modifier = Modifier.weight(1f))
+                            Checkbox(
+                                checked = checkedDays[day]?.value ?: false,
+                                onCheckedChange = { checkedDays[day]?.value = it }
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -355,8 +430,12 @@ fun DialogWithInput(
                         Text("Dismiss")
                     }
                     TextButton(
-                        onClick = { onConfirmation(textFieldValue) },
-                        enabled = isInputValid // Disable button if input is invalid
+                        onClick = {
+                            val selectedDays = checkedDays.filter { it.value.value }
+                                .keys.mapNotNull { dayToNumber[it] }
+                            onConfirmation(textFieldValue, selectedDays)
+                        },
+                        enabled = hasChanges
                     ) {
                         Text("Enter")
                     }
