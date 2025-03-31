@@ -55,6 +55,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -302,7 +303,8 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
                         },
                         placeholderText = "Rest Time in s",
                         theme,
-                        emptyRestTime
+                        emptyRestTime,
+                        keyboardType = KeyboardType.Number
                     )
                 }
             }
@@ -356,6 +358,7 @@ fun MyTextField(
     isError: Boolean? = false,
     focusable: Boolean? = true,
     modifier: Modifier = Modifier,
+    keyboardType: KeyboardType? = null
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -364,7 +367,8 @@ fun MyTextField(
         value = value,
         onValueChange = onValueChange,
         keyboardOptions = KeyboardOptions.Default.copy(
-            imeAction = ImeAction.Done
+            imeAction = ImeAction.Done,
+            keyboardType = keyboardType?: KeyboardType.Text
         ),
         keyboardActions = KeyboardActions(
             onDone = {
@@ -637,7 +641,8 @@ fun SpecificSet(
                         weight = newWeight
                     }
                 },
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Number),
                 keyboardActions = KeyboardActions(
                     onDone = {
                         onWeightChange(weight)
@@ -678,7 +683,8 @@ fun SpecificSet(
                         rep = newRep
                     }
                 },
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Number),
                 keyboardActions = KeyboardActions(
                     onDone = {
                         onRepsChange(rep)  // Aktualizace seznamu po stisku Enter
