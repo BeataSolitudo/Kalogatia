@@ -317,7 +317,7 @@ fun ContentAddExercise(modifier: Modifier, viewModel: AddExerciseScreenViewModel
                                 restTime = newValue
                             }
                         },
-                        placeholderText = "Rest Time in s",
+                        placeholderText = "90",
                         theme,
                         emptyRestTime,
                         keyboardType = KeyboardType.Number
